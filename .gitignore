@@ -14,7 +14,3 @@ __pycache__/
 build/
 dist/
 *.egg-info/
-
-# Environments (if using alternative tooling alongside uv)
-.env
-.venv
