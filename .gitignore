@@ -1,3 +1,20 @@
-.venv/*
+# Virtual environment
+.venv/
+
+# uv cache
+.uv_cache/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build and distribution artifacts
+build/
+dist/
+*.egg-info/
+
+# Environments (if using alternative tooling alongside uv)
 .env
-.env.local
+.venv
