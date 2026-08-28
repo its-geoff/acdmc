@@ -3,10 +3,9 @@ import sys
 from datetime import date
 from typing import Dict, Self, TextIO
 
-
 # Local imports
-from course import Course
 import utils
+from course import Course
 
 
 class Term:
@@ -149,6 +148,7 @@ class Term:
             raise KeyError("Course not found.")
 
     def from_row(
+            self,
             id: str,
             title: str,
             start_date: date,
@@ -166,11 +166,6 @@ class Term:
         Returns:
             Term object with the specified attributes and copied ID.
         """
-        if not start_date:
-            raise ValueError("Start date must not be empty.")
-        if not end_date:
-            raise ValueError("End date must not be empty.")
-        
         t = Term(title, start_date, end_date, active)
-        t._id = self._id
+        t._id = id
         return t
