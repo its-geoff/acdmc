@@ -1,7 +1,8 @@
 # Standard library imports
 import sys
 from datetime import date
-from typing import Dict, Self, TextIO
+from uuid import UUID
+from typing import Self, TextIO
 
 # Local imports
 import utils
@@ -17,13 +18,14 @@ class Term:
             start_date: date,
             end_date: date):
         # UUID v4 generated during creation
-        self._id = utils.generate_uuid()
-        self._title = utils.validate_req_string(title, "Title")
-        self._start_date = utils.validate_date(start_date)
-        self._end_date = utils.validate_date(end_date)
+        self._id: str = utils.generate_uuid()
+        self._title: str = utils.validate_req_string(title, "Title")
+        self._start_date: date = utils.validate_date(start_date)
+        self._end_date: date = utils.validate_date(end_date)
+        utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Course
-        self._course_list: Dict[str, Course] = {}
+        self._course_list: dict[str, Course] = {}
         self.total_credits: int = 0
         self.ovr_gpa: float = 0.0
         self.active: bool = True
