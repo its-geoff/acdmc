@@ -82,7 +82,7 @@ class Course:
         self._grade_scale: dict[float, str] = Course.GRADE_SCALE_DEFAULT.copy()
         self._gpa_scale: dict[str, float] = Course.GPA_SCALE.copy()
 
-    def __eq__(self, other: Self) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Course):
             return False
         return self.id == other.id

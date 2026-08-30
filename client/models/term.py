@@ -28,7 +28,7 @@ class Term:
         self._course_list: dict[str, Course] = {}
         self.active: bool = active
 
-    def __eq__(self, other: Self) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Term):
             return False
         return self.id == other.id
