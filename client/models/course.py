@@ -83,6 +83,14 @@ class Course:
         self._gpa_scale: dict[str, float] = Course.GPA_SCALE.copy()
 
     def __eq__(self, other: object) -> bool:
+        """Checks equality of this object with another Course.
+        
+        Args:
+            other: The object to compare with. Intended to be a Course.
+
+        Returns:
+            bool: True if the objects are the same, False otherwise.
+        """
         if not isinstance(other, Course):
             return False
         return self.id == other.id
