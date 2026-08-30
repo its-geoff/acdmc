@@ -35,7 +35,7 @@ class Term:
 
     @property
     def title(self) -> str:
-        """Get the title of a term."""
+        """Get the title of a Term."""
         return self._title
     
     @title.setter
@@ -44,7 +44,7 @@ class Term:
     
     @property
     def start_date(self) -> date:
-        """Get the start date of a term."""
+        """Get the start date of a Term."""
         return self._start_date
     
     @start_date.setter
@@ -53,7 +53,7 @@ class Term:
     
     @property
     def end_date(self) -> date:
-        """Get the end date of a term."""
+        """Get the end date of a Term."""
         return self._end_date
     
     @end_date.setter
@@ -61,7 +61,7 @@ class Term:
         self._end_date = utils.validate_date(value)
 
     def calculate_total_credits(self) -> int:
-        """Calculate the total number of credits for all courses in the term.
+        """Calculate the total number of credits for all Courses in the Term.
         
         Returns:
             int: The total number of credits.
@@ -74,7 +74,7 @@ class Term:
         return result
 
     def calculate_ovr_gpa(self) -> float:
-        """Calculate the overall GPA for all courses in the term.
+        """Calculate the overall GPA for all Courses in the Term.
         
         Returns:
             float: The overall GPA.
