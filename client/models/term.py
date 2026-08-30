@@ -92,7 +92,7 @@ class Term:
         return utils.float_round(total_gpa / float(credits), 2)
 
     def print_term_info(self, output_stream: TextIO = sys.stdout) -> None:
-        """Print the term information to the specified output stream.
+        """Print the Term information to the specified output stream.
         
         Args:
             output_stream: The output stream to write to.
@@ -113,9 +113,9 @@ class Term:
         key = course.get_id()
         insert = key not in self._course_list
 
-        # Throw error if course is already in the term
+        # Throw error if course is already in the Term
         if not insert:
-            raise ValueError(f"Course with ID {key} already exists in term {self._title}.")
+            raise ValueError(f"Course with ID {key} already exists in Term {self._title}.")
 
         self._course_list[key] = course
         self.total_credits = self.calculate_total_credits()
