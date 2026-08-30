@@ -1,8 +1,8 @@
 # Standard library imports
 import math
+import sys
 from datetime import date
 from typing import Self, TextIO
-import sys
 
 # Local imports
 import utils
