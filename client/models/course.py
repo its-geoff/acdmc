@@ -274,10 +274,8 @@ class Course:
                 continue
 
             category = assignment.category
-            totals[category] += assignment.grade
-            counts[category] += 1
-
-        self._grades_by_category.clear()
+            totals[category] = totals.get(category, 0.0) + assignment.grade
+            counts[category] = counts.get(category, 0) + 1
 
         # Calculate category grades and store in dictionary
         for category_name in self.grade_weights:
@@ -358,7 +356,7 @@ class Course:
         Returns:
             float: The GPA value that corresponds to the letter grade.
         """
-        return self.gpa_scale.get(letter_grade)
+        return self._gpa_scale.get(letter_grade, 0.0)
 
     def _calculate_completed_assignments(self) -> int:
         """Calculate the number of completed Assignments by checking the completed field of
@@ -437,9 +435,10 @@ class Course:
         else:
             raise KeyError("Assignment not found.")
 
+    @classmethod
     def from_row(
-            self,
-            id: str,
+            cls,
+            course_id: str,
             title: str,
             description: str,
             start_date: date,
@@ -462,5 +461,5 @@ class Course:
             Course object with the specified attributes and copied ID.
         """
         c = Course(title, description, start_date, end_date, num_credits, active)
-        c.id = id
+        c.id = course_id
         return c
