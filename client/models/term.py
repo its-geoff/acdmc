@@ -18,7 +18,7 @@ class Term:
             end_date: date,
             active: bool = True):
         # UUID v4 generated during creation
-        self._id: str = utils.generate_uuid()
+        self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
         self._start_date: date = utils.validate_date(start_date)
         self._end_date: date = utils.validate_date(end_date)
@@ -26,17 +26,10 @@ class Term:
 
         # Maps id -> Course
         self._course_list: dict[str, Course] = {}
-        self.total_credits: int = 0
-        self.ovr_gpa: float = 0.0
         self.active: bool = active
 
     def __eq__(self, other: Self) -> bool:
-        return self._id == other._id
-
-    @property
-    def id(self) -> str:
-        """Get the ID of a Term."""
-        return self._id
+        return self.id == other.id
 
     @property
     def title(self) -> str:
@@ -65,7 +58,17 @@ class Term:
     def end_date(self, value: date) -> None:
         self._end_date = utils.validate_date(value)
 
-    def calculate_total_credits(self) -> int:
+    @property
+    def total_credits(self) -> int:
+        """Recalculate and return the total number of credits taken in a Term."""
+        return self._calculate_total_credits()
+
+    @property
+    def ovr_gpa(self) -> float:
+        """Recalculate and return the overall GPA for a Term."""
+        return self._calculate_ovr_gpa() 
+
+    def _calculate_total_credits(self) -> int:
         """Calculate the total number of credits for all Courses in the Term.
         
         Returns:
@@ -74,25 +77,25 @@ class Term:
         result = 0
 
         for _, course in self.course_list.items():
-            result += course.get_num_credits()
+            result += course.num_credits
 
         return result
 
-    def calculate_ovr_gpa(self) -> float:
+    def _calculate_ovr_gpa(self) -> float:
         """Calculate the overall GPA for all Courses in the Term.
         
         Returns:
             float: The overall GPA.
         """
         total_gpa = 0.0
-        credits = self.calculate_total_credits()
+        credits = self.total_credits
 
         # Default case to avoid division by zero
         if credits == 0:
             return 0.0
 
-        for _, course in self.course_list.items():
-            total_gpa += course.get_gpa_val() * course.get_num_credits()
+        for _, course in self._course_list.items():
+            total_gpa += course.gpa_value * course.num_credits
 
         return utils.float_round(total_gpa / float(credits), 2)
 
@@ -123,8 +126,6 @@ class Term:
             raise ValueError(f"Course with ID {key} already exists in Term {self.title}.")
 
         self._course_list[key] = course
-        self.total_credits = self.calculate_total_credits()
-        self.ovr_gpa = self.calculate_ovr_gpa()
 
     def remove_course(self, id: str) -> None:
         """Removes a Course with the specified UUID.
@@ -136,9 +137,6 @@ class Term:
             del self._course_list[id]
         except KeyError as e:
             raise KeyError("Course not found.") from e
-
-        self.total_credits = self.calculate_total_credits()
-        self.ovr_gpa = self.calculate_ovr_gpa()
 
     def find_course(self, id: str) -> Course:
         """Finds a Course in course_list based on ID.
@@ -174,5 +172,5 @@ class Term:
             Term object with the specified attributes and copied ID.
         """
         t = Term(title, start_date, end_date, active)
-        t._id = id
+        t.id = id
         return t
