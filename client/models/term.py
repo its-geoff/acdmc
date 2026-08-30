@@ -164,6 +164,7 @@ class Term:
 
         Args:
             id: The ID of the Term to construct.
+            title: The title of the Term.
             start_date: The start date of the Term.
             end_date: The end date of the Term.
             active: Whether the Term is currently active.
