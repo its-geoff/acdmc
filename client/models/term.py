@@ -34,6 +34,11 @@ class Term:
         return self._id == other._id
 
     @property
+    def id(self) -> str:
+        """Get the ID of a Term."""
+        return self._id
+
+    @property
     def title(self) -> str:
         """Get the title of a Term."""
         return self._title
@@ -97,9 +102,9 @@ class Term:
         Args:
             output_stream: The output stream to write to.
         """
-        print(f"ID: {self._id}", file=output_stream)
-        print(f"Term: {self._title}", file=output_stream)
-        print(f"Duration: {self._start_date} - {self._end_date}", file=output_stream)
+        print(f"ID: {self.id}", file=output_stream)
+        print(f"Term: {self.title}", file=output_stream)
+        print(f"Duration: {self.start_date} - {self.end_date}", file=output_stream)
         print(f"Total Credits: {self.total_credits}", file=output_stream)
         print(f"Overall GPA: {self.ovr_gpa}", file=output_stream)
         print(f"Current? {utils.bool_to_string(self.active)}", file=output_stream)
@@ -115,7 +120,7 @@ class Term:
 
         # Throw error if course is already in the Term
         if not insert:
-            raise ValueError(f"Course with ID {key} already exists in Term {self._title}.")
+            raise ValueError(f"Course with ID {key} already exists in Term {self.title}.")
 
         self._course_list[key] = course
         self.total_credits = self.calculate_total_credits()
