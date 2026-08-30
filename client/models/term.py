@@ -1,7 +1,6 @@
 # Standard library imports
 import sys
 from datetime import date
-from uuid import UUID
 from typing import Self, TextIO
 
 # Local imports
