@@ -115,7 +115,7 @@ class Term:
         Args:
             course: The Course that will be added to course_list.
         """
-        key = course.get_id()
+        key = course.id
         insert = key not in self._course_list
 
         # Throw error if course is already in the Term
