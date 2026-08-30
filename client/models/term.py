@@ -16,7 +16,8 @@ class Term:
             self,
             title: str,
             start_date: date,
-            end_date: date):
+            end_date: date,
+            active: bool = True):
         # UUID v4 generated during creation
         self._id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
@@ -28,7 +29,7 @@ class Term:
         self._course_list: dict[str, Course] = {}
         self.total_credits: int = 0
         self.ovr_gpa: float = 0.0
-        self.active: bool = True
+        self.active: bool = active
 
     def __eq__(self, other: Self) -> bool:
         return self._id == other._id
