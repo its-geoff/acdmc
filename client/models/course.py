@@ -61,7 +61,7 @@ class Course:
             description: str,
             start_date: date,
             end_date: date,
-            num_credits: int,
+            num_credits: int = 3,
             active: bool = True):
         # UUID v4 generated during creation
         self.id: str = utils.generate_uuid()
@@ -74,7 +74,7 @@ class Course:
 
         # Maps id -> Assignment
         self._assignment_list: dict[str, Assignment] = {}
-        self._num_credits: int = 3
+        self._num_credits: int = num_credits
         self._grade_percentage: float = 0.0
         self.active: bool = active
 
@@ -83,6 +83,8 @@ class Course:
         self._gpa_scale: dict[str, float] = Course.GPA_SCALE.copy()
 
     def __eq__(self, other: Self) -> bool:
+        if not isinstance(other, Course):
+            return False
         return self.id == other.id
 
     @property
@@ -172,31 +174,40 @@ class Course:
 
     @property
     def grades_by_category(self) -> dict[str, float]:
+        """Calculate and return the grades by category of a Course."""
         return self._calculate_grades_by_category()
 
-    def _validate_grade_weights(self, grade_weights: dict[str, float]):
-        """Checks that the new list of grade weights is valid.
+    def _validate_grade_weights(self, grade_weights: dict[str, float]) -> dict[str, float]:
+        """Checks that the new list of grade weights is valid. Returns the validated grade weights.
         
         Args:
             grade_weights: The new grade weights.
         
+        Returns:
+            dict[str, float]: The validated grade weights.
+
         Raises:
             ValueError: If the grade weights do not add up to 1.0.
         """
         total = 0.0
 
-        for _, weight in grade_weights:
+        for _, weight in grade_weights.items():
             total += weight
 
-        if math.isclose(total, 1.0):
+        if not math.isclose(total, 1.0):
             raise ValueError("Grade weights must equal 100%.\n"
                 "Current total: " + str(total * 100) + "%")
+        
+        return grade_weights
 
-    def _validate_num_credits(self, num_credits: int) -> None:
-        """Checks that the new number of credits is valid.
+    def _validate_num_credits(self, num_credits: int) -> int:
+        """Checks that the new number of credits is valid. Returns the validated num_credits.
 
         Args:
             num_credits: The new number of credits.
+
+        Returns:
+            int: The validated num_credits.
 
         Raises:
             ValueError: If the number of credits is less than 0.
@@ -204,11 +215,16 @@ class Course:
         if (num_credits < 0):
             raise ValueError("Number of credits must be greater than or equal to 0.")
         
-    def _validate_grade_percentage(self, grade_percentage: float) -> None:
-        """Checks that the new grade percentage is valid.
+        return num_credits
+
+    def _validate_grade_percentage(self, grade_percentage: float) -> float:
+        """Checks that the new grade percentage is valid. Returns the validated grade percentage.
 
         Args:
             grade_percentage: The new grade percentage.
+
+        Returns:
+            float: The validated grade_percentage.
 
         Raises:
             ValueError: If the grade percentage is less than 0 or greater than 150.
@@ -216,12 +232,17 @@ class Course:
         if (grade_percentage < 0.0 or grade_percentage > 150.0):
             raise ValueError("Grade percentage must be between 0 and 150.")
         
-    def _validate_grade_scale(self, grade_scale: dict[float, str]) -> None:
-        """Checks that the new grade scale is valid.
+        return grade_percentage
+        
+    def _validate_grade_scale(self, grade_scale: dict[float, str]) -> dict[float, str]:
+        """Checks that the new grade scale is valid. Returns the validated grade scale.
 
         Args:
             grade_scale: The new grade scale.
         
+        Returns:
+            dict[float, str]: The validated grade scale.
+
         Raises:
             ValueError: If the grade scale is empty or does not provide grades for the range 0-100.
         """
@@ -233,6 +254,8 @@ class Course:
 
         if any(k >= 100.0 for k in grade_scale.keys()):
             raise ValueError("Grade scale must not include values greater than 100.")
+        
+        return grade_scale
 
     def _calculate_grades_by_category(self) -> dict[str, float]:
         """Calculates grades for each category.

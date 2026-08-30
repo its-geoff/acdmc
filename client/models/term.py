@@ -29,6 +29,8 @@ class Term:
         self.active: bool = active
 
     def __eq__(self, other: Self) -> bool:
+        if not isinstance(other, Term):
+            return False
         return self.id == other.id
 
     @property
