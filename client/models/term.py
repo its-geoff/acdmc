@@ -78,7 +78,7 @@ class Term:
         """
         result = 0
 
-        for _, course in self.course_list.items():
+        for _, course in self._course_list.items():
             result += course.num_credits
 
         return result
@@ -154,9 +154,10 @@ class Term:
         else:
             raise KeyError("Course not found.")
 
+    @classmethod
     def from_row(
-            self,
-            id: str,
+            cls,
+            term_id: str,
             title: str,
             start_date: date,
             end_date: date,
@@ -175,5 +176,5 @@ class Term:
             Term object with the specified attributes and copied ID.
         """
         t = Term(title, start_date, end_date, active)
-        t.id = id
+        t.id = term_id
         return t

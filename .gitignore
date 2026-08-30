@@ -1,8 +1,9 @@
 # Virtual environment
 .venv/
 
-# uv cache
+# uv and ruff cache
 .uv_cache/
+.ruff_cache/
 
 # Python bytecode
 __pycache__/
