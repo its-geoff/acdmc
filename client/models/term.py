@@ -29,6 +29,14 @@ class Term:
         self.active: bool = active
 
     def __eq__(self, other: object) -> bool:
+        """Checks equality of this object with another Term.
+        
+        Args:
+            other: The object to compare with. Intended to be a Term.
+
+        Returns:
+            bool: True if the objects are the same, False otherwise.
+        """
         if not isinstance(other, Term):
             return False
         return self.id == other.id
