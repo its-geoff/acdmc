@@ -1,10 +1,7 @@
 # Standard library imports
 import datetime
-import sys
 import uuid
-
-# Local imports
-from assignment import Assignment
+from decimal import Decimal
 
 
 def generate_uuid() -> str:
@@ -44,7 +41,7 @@ def validate_date(date: datetime.datetime) -> datetime.datetime | None:
         date: The date to validate.
 
     Returns:
-        date: The validated date.
+        datetime.datetime: The validated date.
 
     Raises:
         ValueError: If the date is not a valid date.
@@ -71,3 +68,41 @@ def validate_date_order(start_date: datetime.datetime, end_date: datetime.dateti
 
     if dates != sorted(dates):
         raise ValueError("End date cannot be before start date.")
+
+
+def bool_to_string(value: bool) -> str:
+    """Converts bool value into a string for output.
+
+    Args:
+        value: The boolean to convert.
+
+    Returns:
+        str: The converted form of the boolean.
+    """
+    if value:
+        return "Yes"
+    else:
+        return "No"
+
+
+def default_start_date() -> datetime.datetime:
+    """Returns today's date as the default start date.
+    
+    Returns:
+        datetime.datetime: Default start date value.
+    """
+    midnight = datetime.time.min
+    return datetime.combine(datetime.date.today(), midnight)
+
+
+def default_end_date(start_date: datetime.datetime) -> datetime.datetime:
+    """Returns start date + 4 months as the default end date.
+
+    Args:
+        start_date: The specified start date.
+
+    Returns:
+        datetime.datetime: The default end date.
+    """
+    duration = datetime.timedelta(weeks=16)
+    return start_date + duration
