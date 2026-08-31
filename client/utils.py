@@ -1,5 +1,5 @@
 # Standard library imports
-from datetime import datetime
+from datetime import datetime, time, date
 from dateutil.relativedelta import relativedelta
 import uuid
 
@@ -33,15 +33,15 @@ def validate_req_string(value: str, label: str) -> str:
     return value
 
 
-def validate_date(date: datetime) -> datetime:
+def validate_date(date: str) -> datetime:
     """Checks if a date is valid. A date is valid if it can be parsed from a string to a
     datetime object. Returns the validated date.
 
     Args:
-        date: The date to validate.
+        date: The date to validate in string format.
 
     Returns:
-        datetime: The validated date.
+        datetime: The validated date as a datetime object.
 
     Raises:
         ValueError: If the date is not a valid date.
@@ -91,8 +91,8 @@ def default_start_date() -> datetime:
     Returns:
         datetime: Default start date value.
     """
-    midnight = datetime.time.min
-    return datetime.combine(datetime.date.today(), midnight)
+    midnight = time.min
+    return datetime.combine(date.today(), midnight)
 
 
 def default_end_date(start_date: datetime) -> datetime:
