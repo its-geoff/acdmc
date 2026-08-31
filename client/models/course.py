@@ -156,6 +156,12 @@ class Course:
 
     @grade_percentage.setter
     def grade_percentage(self, value: float | None = None) -> None:
+        """Set the grade percentage of a Course.
+        
+        Args:
+            value: The grade percentage to be added. If no value is provided, the 
+                grade percentage will be calculated based on the assignments in the course.
+        """
         if value is None:
             self._grade_percentage = self._calculate_grade_percentage()
         else:
