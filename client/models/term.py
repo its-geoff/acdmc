@@ -1,7 +1,9 @@
 # Standard library imports
+from __future__ import annotations
+
 import sys
 from datetime import date
-from typing import Self, TextIO
+from typing import TextIO
 
 # Local imports
 import utils
@@ -16,7 +18,7 @@ class Term:
             title: str,
             start_date: date,
             end_date: date,
-            active: bool = True):
+            active: bool) -> None:
         # UUID v4 generated during creation
         self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
@@ -169,7 +171,7 @@ class Term:
             title: str,
             start_date: date,
             end_date: date,
-            active: bool) -> Self:
+            active: bool) -> Term:
         """Constructs a Term from a persisted record, using the existing ID instead
         of generating a new one.
 

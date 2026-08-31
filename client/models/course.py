@@ -1,8 +1,10 @@
 # Standard library imports
+from __future__ import annotations
+
 import math
 import sys
 from datetime import date
-from typing import Self, TextIO
+from typing import TextIO
 
 # Local imports
 import utils
@@ -61,8 +63,8 @@ class Course:
             description: str,
             start_date: date,
             end_date: date,
-            num_credits: int = 3,
-            active: bool = True) -> None:
+            num_credits: int,
+            active: bool) -> None:
         # UUID v4 generated during creation
         self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
@@ -156,6 +158,12 @@ class Course:
 
     @grade_percentage.setter
     def grade_percentage(self, value: float | None = None) -> None:
+        """Set the grade percentage of a Course.
+        
+        Args:
+            value: The grade percentage to be added. If no value is provided, the 
+                grade percentage will be calculated based on the assignments in the course.
+        """
         if value is None:
             self._grade_percentage = self._calculate_grade_percentage()
         else:
@@ -452,7 +460,7 @@ class Course:
             start_date: date,
             end_date: date,
             num_credits: int,
-            active: bool) -> Self:
+            active: bool) -> Course:
         """Constructs a Course from a persisted record, using the existing ID instead
         of generating a new one.
 
