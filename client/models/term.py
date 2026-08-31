@@ -16,7 +16,7 @@ class Term:
             title: str,
             start_date: date,
             end_date: date,
-            active: bool = True):
+            active: bool):
         # UUID v4 generated during creation
         self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
