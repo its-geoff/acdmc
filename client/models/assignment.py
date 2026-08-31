@@ -25,7 +25,7 @@ class Assignment:
         # Only set description if it's not empty or whitespace
         self._description: str = description if description and not description.isspace() else ""
         self._category: str = utils.validate_req_string(category, "Category")
-        self._due_date: datetime = utils.validate_date(due_date)
+        self._due_date: datetime = due_date
         self.completed: bool = completed
         # Grade is only set for completed Assignments
         if completed:
@@ -80,7 +80,7 @@ class Assignment:
     
     @due_date.setter
     def due_date(self, value: datetime) -> None:
-        self._due_date = utils.validate_date(value)
+        self._due_date = value
 
     @property
     def grade(self) -> float:

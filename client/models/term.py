@@ -22,8 +22,8 @@ class Term:
         # UUID v4 generated during creation
         self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
-        self._start_date: datetime = utils.validate_date(start_date)
-        self._end_date: datetime = utils.validate_date(end_date)
+        self._start_date: datetime = start_date
+        self._end_date: datetime = end_date
         utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Course
@@ -59,7 +59,7 @@ class Term:
     
     @start_date.setter
     def start_date(self, value: datetime) -> None:
-        self._start_date = utils.validate_date(value)
+        self._start_date = value
     
     @property
     def end_date(self) -> datetime:
@@ -68,7 +68,7 @@ class Term:
     
     @end_date.setter
     def end_date(self, value: datetime) -> None:
-        self._end_date = utils.validate_date(value)
+        self._end_date = value
 
     @property
     def total_credits(self) -> int:
