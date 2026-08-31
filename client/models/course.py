@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 import sys
-from datetime import date
+from datetime import datetime
 from typing import TextIO
 
 # Local imports
@@ -61,8 +61,8 @@ class Course:
             self,
             title: str,
             description: str,
-            start_date: date,
-            end_date: date,
+            start_date: datetime,
+            end_date: datetime,
             num_credits: int,
             active: bool) -> None:
         # UUID v4 generated during creation
@@ -70,8 +70,8 @@ class Course:
         self._title: str = utils.validate_req_string(title, "Title")
         # Only set description if it's not empty or whitespace
         self._description: str = description if description and not description.isspace() else ""
-        self._start_date: date = utils.validate_date(start_date)
-        self._end_date: date = utils.validate_date(end_date)
+        self._start_date: datetime = utils.validate_date(start_date)
+        self._end_date: datetime = utils.validate_date(end_date)
         utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Assignment
@@ -116,21 +116,21 @@ class Course:
         self._description = value if value and not value.isspace() else ""
 
     @property
-    def start_date(self) -> date:
+    def start_date(self) -> datetime:
         """Get the start date of a Course."""
         return self._start_date
     
     @start_date.setter
-    def start_date(self, value: date) -> None:
+    def start_date(self, value: datetime) -> None:
         self._start_date = utils.validate_date(value)
     
     @property
-    def end_date(self) -> date:
+    def end_date(self) -> datetime:
         """Get the end date of a Course."""
         return self._end_date
     
     @end_date.setter
-    def end_date(self, value: date) -> None:
+    def end_date(self, value: datetime) -> None:
         self._end_date = utils.validate_date(value)
 
     @property
@@ -457,8 +457,8 @@ class Course:
             course_id: str,
             title: str,
             description: str,
-            start_date: date,
-            end_date: date,
+            start_date: datetime,
+            end_date: datetime,
             num_credits: int,
             active: bool) -> Course:
         """Constructs a Course from a persisted record, using the existing ID instead
