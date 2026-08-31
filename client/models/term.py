@@ -109,7 +109,7 @@ class Term:
         for _, course in self._course_list.items():
             total_gpa += course.gpa_value * course.num_credits
 
-        return utils.float_round(total_gpa / float(credits), 2)
+        return round(total_gpa / float(credits), 2)
 
     def print_term_info(self, output_stream: TextIO = sys.stdout) -> None:
         """Print the Term information to the specified output stream.

@@ -279,6 +279,9 @@ class Course:
         Iterates over all assignments in the Course, groups completed assignments by category,
         and computes raw percentage grade for each category. The per-category averages will be
         weighted for the total grade calculation.
+
+        Returns:
+            dict[str, float]: Dictionary mapping category names to their average grades.
         """
         totals: dict[str, float] = {}
         counts: dict[str, int] = {}
@@ -299,7 +302,7 @@ class Course:
                 continue
             
             category_grade = totals[category_name] / counts[category_name]
-            output[category_name] = utils.float_round(category_grade, 2)
+            output[category_name] = round(category_grade, 2)
         
         return output
 
@@ -331,7 +334,7 @@ class Course:
             weighted_grade = grade * normalized_weight
             total += weighted_grade
 
-        return utils.float_round(total, 2)
+        return round(total, 2)
 
     def _calculate_letter_grade(self, 
             grade_percentage: float, 

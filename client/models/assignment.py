@@ -29,7 +29,7 @@ class Assignment:
         self.completed: bool = completed
         # Grade is only set for completed Assignments
         if completed:
-            self._grade: float = utils.float_round(utils.validate_grade(grade), 2)
+            self._grade: float = round(utils.validate_grade(grade), 2)
         else:
             self._grade: float = 0.0
 
@@ -109,10 +109,10 @@ class Assignment:
             if total_points <= 0.0:
                 raise ValueError("Total points must be greater than 0.")
             calculated_grade = utils.validate_grade((points_earned / total_points) * 100.0)
-            self._grade = utils.float_round(calculated_grade, 2)
+            self._grade = round(calculated_grade, 2)
         elif len(value) == 1:
             # Percentage-based: (percentage,)
-            self._grade = utils.float_round(utils.validate_grade(value[0]), 2)
+            self._grade = round(utils.validate_grade(value[0]), 2)
         else:
             raise ValueError("Grade must be a tuple of length 1 (percentage) "
                 "or tuple of length 2 (points_earned, total_points)")
