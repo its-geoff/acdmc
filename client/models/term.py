@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import sys
-from datetime import date
+from datetime import datetime
 from typing import TextIO
 
 # Local imports
@@ -16,14 +16,14 @@ class Term:
     def __init__(
             self,
             title: str,
-            start_date: date,
-            end_date: date,
+            start_date: datetime,
+            end_date: datetime,
             active: bool) -> None:
         # UUID v4 generated during creation
         self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
-        self._start_date: date = utils.validate_date(start_date)
-        self._end_date: date = utils.validate_date(end_date)
+        self._start_date: datetime = utils.validate_date(start_date)
+        self._end_date: datetime = utils.validate_date(end_date)
         utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Course
@@ -53,21 +53,21 @@ class Term:
         self._title = utils.validate_req_string(value, "Title")
     
     @property
-    def start_date(self) -> date:
+    def start_date(self) -> datetime:
         """Get the start date of a Term."""
         return self._start_date
     
     @start_date.setter
-    def start_date(self, value: date) -> None:
+    def start_date(self, value: datetime) -> None:
         self._start_date = utils.validate_date(value)
     
     @property
-    def end_date(self) -> date:
+    def end_date(self) -> datetime:
         """Get the end date of a Term."""
         return self._end_date
     
     @end_date.setter
-    def end_date(self, value: date) -> None:
+    def end_date(self, value: datetime) -> None:
         self._end_date = utils.validate_date(value)
 
     @property
@@ -169,8 +169,8 @@ class Term:
             cls,
             term_id: str,
             title: str,
-            start_date: date,
-            end_date: date,
+            start_date: datetime,
+            end_date: datetime,
             active: bool) -> Term:
         """Constructs a Term from a persisted record, using the existing ID instead
         of generating a new one.

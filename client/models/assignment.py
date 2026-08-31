@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import sys
-from datetime import date
+from datetime import datetime
 from typing import TextIO
 
 # Local imports
@@ -17,7 +17,7 @@ class Assignment:
             title: str,
             description: str,
             category: str,
-            due_date: date,
+            due_date: datetime,
             completed: bool,
             grade: float) -> None:
         self.id: str = utils.generate_uuid()
@@ -25,7 +25,7 @@ class Assignment:
         # Only set description if it's not empty or whitespace
         self._description: str = description if description and not description.isspace() else ""
         self._category: str = utils.validate_req_string(category, "Category")
-        self._due_date: date = utils.validate_date(due_date)
+        self._due_date: datetime = utils.validate_date(due_date)
         self.completed: bool = completed
         # Grade is only set for completed Assignments
         if completed:
@@ -74,12 +74,12 @@ class Assignment:
         self._category = utils.validate_req_string(value, "Category")
 
     @property
-    def due_date(self) -> date:
+    def due_date(self) -> datetime:
         """Get the start date of an Assignment."""
         return self._due_date
     
     @due_date.setter
-    def due_date(self, value: date) -> None:
+    def due_date(self, value: datetime) -> None:
         self._due_date = utils.validate_date(value)
 
     @property
@@ -139,7 +139,7 @@ class Assignment:
         title: str,
         description: str,
         category: str,
-        due_date: date,
+        due_date: datetime,
         completed: bool,
         grade: float) -> Assignment:
         """Constructs a Assignment from a persisted record, using the existing ID instead
