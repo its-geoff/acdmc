@@ -1,8 +1,10 @@
 # Standard library imports
+from __future__ import annotations
+
 import math
 import sys
 from datetime import date
-from typing import Self, TextIO
+from typing import TextIO
 
 # Local imports
 import utils
@@ -458,7 +460,7 @@ class Course:
             start_date: date,
             end_date: date,
             num_credits: int,
-            active: bool) -> Self:
+            active: bool) -> Course:
         """Constructs a Course from a persisted record, using the existing ID instead
         of generating a new one.
 

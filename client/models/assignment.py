@@ -1,7 +1,9 @@
 # Standard library imports
+from __future__ import annotations
+
 import sys
 from datetime import date
-from typing import Self, TextIO
+from typing import TextIO
 
 # Local imports
 import utils
@@ -86,7 +88,7 @@ class Assignment:
         return self._grade
 
     @grade.setter
-    def grade(self, value: tuple[float] | tuple[float, float]) -> None:
+    def grade(self, value: tuple[float, ...]) -> None:
         """Set the grade of an Assignment.
         
         This setter works for both percentage-based and point-based grading. If only a single
@@ -98,14 +100,15 @@ class Assignment:
             value: The grade to be added or the number of points earned and total points.
 
         Raises:
-            ValueError: If total points are less than or equal to 0.
+            ValueError: If total points are less than or equal to 0 or if 
+                the grade is not a tuple of length 1 or 2.
         """
         if len(value) == 2:
             # Point-based: (points_earned, total_points)
             points_earned, total_points = value
             if total_points <= 0.0:
                 raise ValueError("Total points must be greater than 0.")
-            calculated_grade = (points_earned / total_points) * 100.0
+            calculated_grade = utils.validate_grade((points_earned / total_points) * 100.0)
             self._grade = utils.float_round(calculated_grade, 2)
         elif len(value) == 1:
             # Percentage-based: (percentage,)
@@ -138,7 +141,7 @@ class Assignment:
         category: str,
         due_date: date,
         completed: bool,
-        grade: float) -> Self:
+        grade: float) -> Assignment:
         """Constructs a Assignment from a persisted record, using the existing ID instead
         of generating a new one.
 
