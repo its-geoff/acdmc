@@ -61,8 +61,8 @@ class Course:
             description: str,
             start_date: date,
             end_date: date,
-            num_credits: int = 3,
-            active: bool = True) -> None:
+            num_credits: int,
+            active: bool) -> None:
         # UUID v4 generated during creation
         self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
