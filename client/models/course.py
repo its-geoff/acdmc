@@ -70,8 +70,8 @@ class Course:
         self._title: str = utils.validate_req_string(title, "Title")
         # Only set description if it's not empty or whitespace
         self._description: str = description if description and not description.isspace() else ""
-        self._start_date: datetime = utils.validate_date(start_date)
-        self._end_date: datetime = utils.validate_date(end_date)
+        self._start_date: datetime = start_date
+        self._end_date: datetime = end_date
         utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Assignment
@@ -122,7 +122,7 @@ class Course:
     
     @start_date.setter
     def start_date(self, value: datetime) -> None:
-        self._start_date = utils.validate_date(value)
+        self._start_date = value
     
     @property
     def end_date(self) -> datetime:
@@ -131,7 +131,7 @@ class Course:
     
     @end_date.setter
     def end_date(self, value: datetime) -> None:
-        self._end_date = utils.validate_date(value)
+        self._end_date = value
 
     @property
     def grade_weights(self) -> dict[str, float]:
