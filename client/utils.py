@@ -1,7 +1,6 @@
 # Standard library imports
 import datetime
 import uuid
-from decimal import Decimal
 
 
 def generate_uuid() -> str:
