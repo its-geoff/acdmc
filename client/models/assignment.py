@@ -17,7 +17,7 @@ class Assignment:
             category: str,
             due_date: date,
             completed: bool,
-            grade: float):
+            grade: float) -> None:
         self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
         # Only set description if it's not empty or whitespace
@@ -74,7 +74,7 @@ class Assignment:
     @property
     def due_date(self) -> date:
         """Get the start date of an Assignment."""
-        return self._start_date
+        return self._due_date
     
     @due_date.setter
     def due_date(self, value: date) -> None:
@@ -86,29 +86,33 @@ class Assignment:
         return self._grade
 
     @grade.setter
-    def grade(self, value: float, total_points: float | None = None) -> None:
+    def grade(self, value: tuple[float] | tuple[float, float]) -> None:
         """Set the grade of an Assignment.
         
-        This setter works for both percentage-based and point-based grading. If only a
+        This setter works for both percentage-based and point-based grading. If only a single
         value is entered, percentage-based grading is used and the percentage will be
-        added as the grade. If both a value and total points are added, point-based grading
+        added as the grade. If two values are entered, point-based grading
         is used and the percentage will be calculated before adding the grade.
 
         Args:
-            value: The grade to be added or the number of points earned.
-            total_points: The total points of the assignment.
+            value: The grade to be added or the number of points earned and total points.
 
         Raises:
             ValueError: If total points are less than or equal to 0.
         """
-        if total_points:
+        if len(value) == 2:
+            # Point-based: (points_earned, total_points)
+            points_earned, total_points = value
             if total_points <= 0.0:
                 raise ValueError("Total points must be greater than 0.")
-
-            calculated_grade = (value / total_points) * 100.0
+            calculated_grade = (points_earned / total_points) * 100.0
             self._grade = utils.float_round(calculated_grade, 2)
+        elif len(value) == 1:
+            # Percentage-based: (percentage,)
+            self._grade = utils.float_round(utils.validate_grade(value[0]), 2)
         else:
-            self._grade = utils.float_round(utils.validate_grade(value), 2)
+            raise ValueError("Grade must be a tuple of length 1 (percentage) "
+                "or tuple of length 2 (points_earned, total_points)")
 
     def print_assignment_info(self, output_stream: TextIO = sys.stdout) -> None:
         """Print the Assignment information to the specified output stream.
@@ -144,7 +148,7 @@ class Assignment:
             description: A description of the Assignment.
             category: The category of the Assignment.
             due_date: The start date of the Assignment.
-            completed: Whether the Course is completed.
+            completed: Whether the Assignment is completed.
             grade: The grade of the Assignment.
         
         Returns:
