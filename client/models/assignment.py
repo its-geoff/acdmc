@@ -75,7 +75,7 @@ class Assignment:
 
     @property
     def due_date(self) -> datetime:
-        """Get the start date of an Assignment."""
+        """Get the due date of an Assignment."""
         return self._due_date
     
     @due_date.setter
