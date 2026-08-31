@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 import sys
-from datetime import date
+from datetime import datetime
 from typing import TextIO
 
 # Local imports
@@ -61,8 +61,8 @@ class Course:
             self,
             title: str,
             description: str,
-            start_date: date,
-            end_date: date,
+            start_date: datetime,
+            end_date: datetime,
             num_credits: int,
             active: bool) -> None:
         # UUID v4 generated during creation
@@ -70,8 +70,8 @@ class Course:
         self._title: str = utils.validate_req_string(title, "Title")
         # Only set description if it's not empty or whitespace
         self._description: str = description if description and not description.isspace() else ""
-        self._start_date: date = utils.validate_date(start_date)
-        self._end_date: date = utils.validate_date(end_date)
+        self._start_date: datetime = start_date
+        self._end_date: datetime = end_date
         utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Assignment
@@ -116,22 +116,22 @@ class Course:
         self._description = value if value and not value.isspace() else ""
 
     @property
-    def start_date(self) -> date:
+    def start_date(self) -> datetime:
         """Get the start date of a Course."""
         return self._start_date
     
     @start_date.setter
-    def start_date(self, value: date) -> None:
-        self._start_date = utils.validate_date(value)
+    def start_date(self, value: datetime) -> None:
+        self._start_date = value
     
     @property
-    def end_date(self) -> date:
+    def end_date(self) -> datetime:
         """Get the end date of a Course."""
         return self._end_date
     
     @end_date.setter
-    def end_date(self, value: date) -> None:
-        self._end_date = utils.validate_date(value)
+    def end_date(self, value: datetime) -> None:
+        self._end_date = value
 
     @property
     def grade_weights(self) -> dict[str, float]:
@@ -279,6 +279,9 @@ class Course:
         Iterates over all assignments in the Course, groups completed assignments by category,
         and computes raw percentage grade for each category. The per-category averages will be
         weighted for the total grade calculation.
+
+        Returns:
+            dict[str, float]: Dictionary mapping category names to their average grades.
         """
         totals: dict[str, float] = {}
         counts: dict[str, int] = {}
@@ -299,7 +302,7 @@ class Course:
                 continue
             
             category_grade = totals[category_name] / counts[category_name]
-            output[category_name] = utils.float_round(category_grade, 2)
+            output[category_name] = round(category_grade, 2)
         
         return output
 
@@ -331,7 +334,7 @@ class Course:
             weighted_grade = grade * normalized_weight
             total += weighted_grade
 
-        return utils.float_round(total, 2)
+        return round(total, 2)
 
     def _calculate_letter_grade(self, 
             grade_percentage: float, 
@@ -457,8 +460,8 @@ class Course:
             course_id: str,
             title: str,
             description: str,
-            start_date: date,
-            end_date: date,
+            start_date: datetime,
+            end_date: datetime,
             num_credits: int,
             active: bool) -> Course:
         """Constructs a Course from a persisted record, using the existing ID instead

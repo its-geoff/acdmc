@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import sys
-from datetime import date
+from datetime import datetime
 from typing import TextIO
 
 # Local imports
@@ -17,7 +17,7 @@ class Assignment:
             title: str,
             description: str,
             category: str,
-            due_date: date,
+            due_date: datetime,
             completed: bool,
             grade: float) -> None:
         self.id: str = utils.generate_uuid()
@@ -25,11 +25,11 @@ class Assignment:
         # Only set description if it's not empty or whitespace
         self._description: str = description if description and not description.isspace() else ""
         self._category: str = utils.validate_req_string(category, "Category")
-        self._due_date: date = utils.validate_date(due_date)
+        self._due_date: datetime = due_date
         self.completed: bool = completed
         # Grade is only set for completed Assignments
         if completed:
-            self._grade: float = utils.float_round(utils.validate_grade(grade), 2)
+            self._grade: float = round(utils.validate_grade(grade), 2)
         else:
             self._grade: float = 0.0
 
@@ -74,13 +74,13 @@ class Assignment:
         self._category = utils.validate_req_string(value, "Category")
 
     @property
-    def due_date(self) -> date:
-        """Get the start date of an Assignment."""
+    def due_date(self) -> datetime:
+        """Get the due date of an Assignment."""
         return self._due_date
     
     @due_date.setter
-    def due_date(self, value: date) -> None:
-        self._due_date = utils.validate_date(value)
+    def due_date(self, value: datetime) -> None:
+        self._due_date = value
 
     @property
     def grade(self) -> float:
@@ -109,10 +109,10 @@ class Assignment:
             if total_points <= 0.0:
                 raise ValueError("Total points must be greater than 0.")
             calculated_grade = utils.validate_grade((points_earned / total_points) * 100.0)
-            self._grade = utils.float_round(calculated_grade, 2)
+            self._grade = round(calculated_grade, 2)
         elif len(value) == 1:
             # Percentage-based: (percentage,)
-            self._grade = utils.float_round(utils.validate_grade(value[0]), 2)
+            self._grade = round(utils.validate_grade(value[0]), 2)
         else:
             raise ValueError("Grade must be a tuple of length 1 (percentage) "
                 "or tuple of length 2 (points_earned, total_points)")
@@ -139,7 +139,7 @@ class Assignment:
         title: str,
         description: str,
         category: str,
-        due_date: date,
+        due_date: datetime,
         completed: bool,
         grade: float) -> Assignment:
         """Constructs a Assignment from a persisted record, using the existing ID instead

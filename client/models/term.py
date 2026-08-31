@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import sys
-from datetime import date
+from datetime import datetime
 from typing import TextIO
 
 # Local imports
@@ -16,14 +16,14 @@ class Term:
     def __init__(
             self,
             title: str,
-            start_date: date,
-            end_date: date,
+            start_date: datetime,
+            end_date: datetime,
             active: bool) -> None:
         # UUID v4 generated during creation
         self.id: str = utils.generate_uuid()
         self._title: str = utils.validate_req_string(title, "Title")
-        self._start_date: date = utils.validate_date(start_date)
-        self._end_date: date = utils.validate_date(end_date)
+        self._start_date: datetime = start_date
+        self._end_date: datetime = end_date
         utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Course
@@ -53,22 +53,22 @@ class Term:
         self._title = utils.validate_req_string(value, "Title")
     
     @property
-    def start_date(self) -> date:
+    def start_date(self) -> datetime:
         """Get the start date of a Term."""
         return self._start_date
     
     @start_date.setter
-    def start_date(self, value: date) -> None:
-        self._start_date = utils.validate_date(value)
+    def start_date(self, value: datetime) -> None:
+        self._start_date = value
     
     @property
-    def end_date(self) -> date:
+    def end_date(self) -> datetime:
         """Get the end date of a Term."""
         return self._end_date
     
     @end_date.setter
-    def end_date(self, value: date) -> None:
-        self._end_date = utils.validate_date(value)
+    def end_date(self, value: datetime) -> None:
+        self._end_date = value
 
     @property
     def total_credits(self) -> int:
@@ -109,7 +109,7 @@ class Term:
         for _, course in self._course_list.items():
             total_gpa += course.gpa_value * course.num_credits
 
-        return utils.float_round(total_gpa / float(credits), 2)
+        return round(total_gpa / float(credits), 2)
 
     def print_term_info(self, output_stream: TextIO = sys.stdout) -> None:
         """Print the Term information to the specified output stream.
@@ -169,8 +169,8 @@ class Term:
             cls,
             term_id: str,
             title: str,
-            start_date: date,
-            end_date: date,
+            start_date: datetime,
+            end_date: datetime,
             active: bool) -> Term:
         """Constructs a Term from a persisted record, using the existing ID instead
         of generating a new one.
