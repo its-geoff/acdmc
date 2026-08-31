@@ -1,7 +1,8 @@
 # Standard library imports
-from datetime import datetime, time, date
-from dateutil.relativedelta import relativedelta
 import uuid
+from datetime import date, datetime, time
+
+from dateutil.relativedelta import relativedelta
 
 
 def generate_uuid() -> str:
