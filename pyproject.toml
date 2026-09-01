@@ -5,6 +5,8 @@ description = "Your personal academic sidekick — track assignments, estimate g
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
     "python-dateutil>=2.9.0.post0",
     "ruff>=0.16.4",
 ]
@@ -16,3 +18,15 @@ exclude = [".github"]
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["client", "server"]
+markers = [
+    "term_smoke: Smoke tests for Term model, checking basic functionality",
+    "term_edge: Edge case tests for Term model, verifying edge cases",
+    "course_smoke: Smoke tests for Course model, checking basic functionality",
+    "course_edge: Edge case tests for Course model, verifying edge cases",
+    "assignment_smoke: Smoke tests for Assignment model, checking basic functionality",
+    "assignment_edge: Edge case tests for Assignment model, verifying edge cases"
+]

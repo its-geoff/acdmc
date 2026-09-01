@@ -7,7 +7,8 @@ from typing import TextIO
 
 # Local imports
 import utils
-from course import Course
+
+from .course import Course
 
 
 class Term:
@@ -121,7 +122,7 @@ class Term:
         print(f"Term: {self.title}", file=output_stream)
         print(f"Duration: {self.start_date} - {self.end_date}", file=output_stream)
         print(f"Total Credits: {self.total_credits}", file=output_stream)
-        print(f"Overall GPA: {self.ovr_gpa}", file=output_stream)
+        print(f"Overall GPA: {self.ovr_gpa:.2f}", file=output_stream)
         print(f"Current? {utils.bool_to_string(self.active)}", file=output_stream)
 
     def add_course(self, course: Course) -> None:
