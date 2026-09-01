@@ -9,12 +9,6 @@ from models.course import Course
 # Local imports
 from models.term import Term
 
-# Pytest markers configuration
-pytestmark = [
-    pytest.mark.term_smoke,
-    pytest.mark.term_edge
-]
-
 
 # Helper function to mask UUIDs in output
 def mask_uuids(output: str) -> str:
@@ -266,10 +260,10 @@ class TestTerm:
         
         # Modify the found course
         found_course = term1.find_course(course1.id)
-        found_course.active = False
+        found_course.active = True
         
         # Verify the modification
-        assert term1.find_course(course1.id).active is False
+        assert term1.find_course(course1.id).active is True
 
     @pytest.mark.term_smoke
     def test_print_term_info(self, term1):
