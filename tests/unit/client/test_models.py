@@ -12,7 +12,14 @@ from models.term import Term
 
 # Helper function to mask UUIDs in output
 def mask_uuids(output: str) -> str:
-    """Replace UUIDs in output string with <UUID> placeholder."""
+    """Replace UUIDs in output string with <UUID> placeholder.
+    
+    Args:
+        output: The string that contains UUIDs to mask.
+
+    Returns:
+        str: The string with each UUID replaced by '<UUID>'.
+    """
     uuid_pattern = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
     return re.sub(uuid_pattern, "<UUID>", output)
 
