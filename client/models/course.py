@@ -8,7 +8,8 @@ from typing import TextIO
 
 # Local imports
 import utils
-from assignment import Assignment
+
+from .assignment import Assignment
 
 
 class Course:
@@ -210,7 +211,7 @@ class Course:
         for _, weight in grade_weights.items():
             total += weight
 
-        if not math.isclose(total, 1.0):
+        if not math.isclose(total, 1.0, abs_tol=1e-9):
             raise ValueError("Grade weights must equal 100%.\n"
                 "Current total: " + str(total * 100) + "%")
         
@@ -325,7 +326,7 @@ class Course:
                 active_weight_total += weight
 
         # Return early if no active categories
-        if math.isclose(active_weight_total, 0.0):
+        if math.isclose(active_weight_total, 0.0, abs_tol=1e-9):
             return 0.0
 
         # Normalize weights and calculate active grade
@@ -352,7 +353,7 @@ class Course:
         if grade_scale is None:
             grade_scale = self.grade_scale
         
-        if (utils.float_equal(grade_percentage, 0.0) 
+        if (math.isclose(grade_percentage, 0.0, abs_tol=1e-9)
                 and self._calculate_completed_assignments() == 0):
             # Grade not determined if all assignments are incomplete
             return "N/A"
