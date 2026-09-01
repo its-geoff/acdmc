@@ -8,7 +8,8 @@ from typing import TextIO
 
 # Local imports
 import utils
-from assignment import Assignment
+
+from .assignment import Assignment
 
 
 class Course:
@@ -352,7 +353,7 @@ class Course:
         if grade_scale is None:
             grade_scale = self.grade_scale
         
-        if (utils.float_equal(grade_percentage, 0.0) 
+        if (math.isclose(grade_percentage, 0.0)
                 and self._calculate_completed_assignments() == 0):
             # Grade not determined if all assignments are incomplete
             return "N/A"
