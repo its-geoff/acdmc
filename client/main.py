@@ -1,3 +1,5 @@
+"""Main entry point for the acdmc client."""
+
 def main() -> None:
     """Placeholder for main until future implementation."""
     print("Hello from acdmc!")
