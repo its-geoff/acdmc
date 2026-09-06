@@ -3,7 +3,7 @@
 # Standard library imports
 import math
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytest
 
@@ -77,9 +77,11 @@ def test_default_start_date(today_date):
 def test_default_end_date(today_date):
     """Test that default_end_date returns start date + 4 months."""
     result = utils.default_end_date(today_date)
-    expected = today_date + timedelta(days=120)  # Approximate 4 months
-    # Using isclose for date comparison due to month handling differences
-    assert math.isclose(result.timestamp(), expected.timestamp(), abs_tol=1e9)
+    # Calculate expected date by adding 4 months
+    year = today_date.year + (today_date.month + 4 - 1) // 12
+    month = (today_date.month + 4 - 1) % 12 + 1
+    expected = datetime(year, month, today_date.day)
+    assert result == expected
 
 
 @pytest.mark.utils_smoke
