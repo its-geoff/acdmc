@@ -6,12 +6,16 @@ WORKDIR /app
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Copy dependency files
-COPY pyproject.toml ./
+COPY pyproject.toml uv.lock ./
 
 # Install dependencies
 RUN uv sync --frozen
 
-# Copy application code
-COPY client/ ./client/
+RUN groupadd --gid 10001 app && \
+    useradd --uid 10001 --gid app --create-home --shell /usr/sbin/nologin app
+
+COPY --chown=app:app client/ ./client/
+
+USER app
 
 CMD ["python", "client/main.py"]
