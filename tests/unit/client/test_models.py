@@ -1400,3 +1400,516 @@ class TestTerm:
         )
         
         assert term.start_date == term.end_date
+
+
+class TestAssignment:
+    """Test suite for Assignment model."""
+
+    @pytest.fixture
+    def assignment1(self) -> Assignment:
+        """Create a sample Assignment for testing.
+        
+        Returns:
+            Assignment: A test assignment with all fields populated.
+        """
+        return Assignment(
+            "Homework 3",
+            "Focus on variables and strings.",
+            "Homework",
+            datetime(2025, 11, 20),
+            True,
+            95.18
+        )
+
+    @pytest.mark.assignment_smoke
+    def test_id_getter(self, assignment1: Assignment) -> None:
+        """Ensure ID is not empty."""
+        assert assignment1.id and not assignment1.id.isspace()
+
+    @pytest.mark.assignment_smoke
+    def test_title_getter(self, assignment1: Assignment) -> None:
+        """Test title getter returns correct value."""
+        assert assignment1.title == "Homework 3"
+
+    @pytest.mark.assignment_smoke
+    def test_description_getter(self, assignment1: Assignment) -> None:
+        """Test description getter returns correct value."""
+        assert assignment1.description == "Focus on variables and strings."
+
+    @pytest.mark.assignment_smoke
+    def test_category_getter(self, assignment1: Assignment) -> None:
+        """Test category getter returns correct value."""
+        assert assignment1.category == "Homework"
+
+    @pytest.mark.assignment_smoke
+    def test_due_date_getter(self, assignment1: Assignment) -> None:
+        """Test due date getter returns correct value."""
+        assert assignment1.due_date == datetime(2025, 11, 20)
+
+    @pytest.mark.assignment_smoke
+    def test_completed_getter(self, assignment1: Assignment) -> None:
+        """Test completed getter returns correct value."""
+        assert assignment1.completed is True
+
+    @pytest.mark.assignment_smoke
+    def test_grade_getter(self, assignment1: Assignment) -> None:
+        """Test grade getter returns correct value."""
+        assert math.isclose(assignment1.grade, 95.18, abs_tol=1e-9)
+
+    @pytest.mark.assignment_smoke
+    def test_title_setter(self, assignment1: Assignment) -> None:
+        """Test title setter updates the title."""
+        assignment1.title = "Homework 2"
+        assert assignment1.title == "Homework 2"
+
+    @pytest.mark.assignment_smoke
+    def test_description_setter(self, assignment1: Assignment) -> None:
+        """Test description setter updates the description."""
+        assignment1.description = "Focus on order of operations."
+        assert assignment1.description == "Focus on order of operations."
+
+    @pytest.mark.assignment_smoke
+    def test_category_setter(self, assignment1: Assignment) -> None:
+        """Test category setter updates the category."""
+        assignment1.category = "Midterm"
+        assert assignment1.category == "Midterm"
+
+    @pytest.mark.assignment_smoke
+    def test_due_date_setter(self, assignment1: Assignment) -> None:
+        """Test due date setter updates the due date."""
+        assignment1.due_date = datetime(2025, 11, 22)
+        assert assignment1.due_date == datetime(2025, 11, 22)
+
+    @pytest.mark.assignment_smoke
+    def test_completed_setter(self, assignment1: Assignment) -> None:
+        """Test completed setter updates the completed status."""
+        assignment1.completed = False
+        assert assignment1.completed is False
+
+    @pytest.mark.assignment_smoke
+    def test_grade_setter_percentage(self, assignment1: Assignment) -> None:
+        """Test grade setter with percentage value."""
+        assignment1.grade = (96.20,)
+        assert math.isclose(assignment1.grade, 96.20, abs_tol=1e-9)
+
+    @pytest.mark.assignment_smoke
+    def test_grade_setter_points(self, assignment1: Assignment) -> None:
+        """Test grade setter with points earned and total points."""
+        assignment1.grade = (18, 20)
+        assert math.isclose(assignment1.grade, 90.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_smoke
+    def test_initialization_without_description(self) -> None:
+        """Test initialization with empty description."""
+        assignment2 = Assignment(
+            "Homework 1", "", "Homework",
+            datetime(2025, 10, 31), False, 0.0
+        )
+        assert assignment2.id and not assignment2.id.isspace()
+        assert assignment2.title == "Homework 1"
+        assert assignment2.category == "Homework"
+        assert assignment2.description == ""
+
+    @pytest.mark.assignment_smoke
+    def test_initialization_with_description(self) -> None:
+        """Test initialization with description."""
+        assignment2 = Assignment(
+            "Homework 1", "Focus on lexical analysis.", "Homework",
+            datetime(2025, 10, 31), True, 90.50
+        )
+        assert assignment2.id and not assignment2.id.isspace()
+        assert assignment2.title == "Homework 1"
+        assert assignment2.category == "Homework"
+        assert assignment2.description == "Focus on lexical analysis."
+        assert assignment2.due_date == datetime(2025, 10, 31)
+        assert assignment2.completed is True
+        assert math.isclose(assignment2.grade, 90.50, abs_tol=1e-9)
+
+    @pytest.mark.assignment_smoke
+    def test_print_assignment_info(self, assignment1: Assignment) -> None:
+        """Test print_assignment_info outputs correct format."""
+        ss = StringIO()
+        assignment1.print_assignment_info(ss)
+        output = ss.getvalue()
+        output = mask_uuids(output)
+
+        expected = ("ID: <UUID>\nAssignment: Homework 3\n"
+                   "Description: Focus on variables and strings.\n"
+                   "Category: Homework\nDue Date: 2025-11-20 00:00:00\n"
+                   "Completed? Yes\nGrade: 95.18%\n")
+        assert output == expected
+
+    @pytest.mark.assignment_smoke
+    def test_equality_basic(self, assignment1: Assignment) -> None:
+        """Test Assignment equality operator."""
+        assignment2 = Assignment(
+            "Homework 1", "Focus on lexical analysis.", "Homework",
+            datetime(2025, 10, 31), True, 75
+        )
+        assignment3 = Assignment(
+            "Homework 3", "Focus on variables and strings.", "Homework",
+            datetime(2025, 11, 20), True, 95.18
+        )
+        assignment4 = assignment1  # Copy reference
+
+        assert assignment1 != assignment2
+        assert assignment1 != assignment3
+        assert assignment1 == assignment4
+
+    @pytest.mark.assignment_smoke
+    def test_from_row_all_fields(self) -> None:
+        """Test Assignment.from_row class method with all fields."""
+        test_id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        assignment = Assignment.from_row(
+            test_id, "Homework 3", "Focus on variables and strings.",
+            "Homework", datetime(2025, 11, 20), True, 95.18
+        )
+
+        assert assignment.id == test_id
+        assert assignment.title == "Homework 3"
+        assert assignment.description == "Focus on variables and strings."
+        assert assignment.category == "Homework"
+        assert assignment.due_date == datetime(2025, 11, 20)
+        assert assignment.completed is True
+        assert math.isclose(assignment.grade, 95.18, abs_tol=1e-9)
+
+    @pytest.mark.assignment_smoke
+    def test_from_row_preserves_id(self) -> None:
+        """Test that from_row preserves the provided ID."""
+        test_id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        assignment = Assignment.from_row(
+            test_id, "Homework 3", "",
+            "Homework", datetime(2025, 11, 20), False, 0.0
+        )
+
+        assert assignment.id == test_id
+
+    @pytest.mark.assignment_smoke
+    def test_from_row_completed_false(self) -> None:
+        """Test from_row with completed=False."""
+        assignment = Assignment.from_row(
+            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "Homework 3", "", "Homework",
+            datetime(2025, 11, 20), False, 0.0
+        )
+
+        assert assignment.completed is False
+
+    @pytest.mark.assignment_smoke
+    def test_from_row_empty_description(self) -> None:
+        """Test from_row with empty description."""
+        assignment = Assignment.from_row(
+            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "Homework 3", "", "Homework",
+            datetime(2025, 11, 20), False, 0.0
+        )
+
+        assert assignment.description == ""
+
+    @pytest.mark.assignment_smoke
+    def test_from_row_does_not_equal_new_assignment(self) -> None:
+        """Test that from_row Assignment and new Assignment with same params are not equal."""
+        from_row_assignment = Assignment.from_row(
+            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "Homework 3", "Focus on variables and strings.",
+            "Homework", datetime(2025, 11, 20), True, 95.18
+        )
+        new_assignment = Assignment(
+            "Homework 3", "Focus on variables and strings.",
+            "Homework", datetime(2025, 11, 20), True, 95.18
+        )
+
+        assert from_row_assignment != new_assignment
+
+    @pytest.mark.assignment_edge
+    def test_description_getter_empty(self) -> None:
+        """Test description getter with empty description."""
+        assignment2 = Assignment(
+            "Homework 1", "", "Homework",
+            datetime(2025, 10, 31), False, 90.50
+        )
+        assert assignment2.description == ""
+
+    @pytest.mark.assignment_edge
+    def test_completed_getter_default(self) -> None:
+        """Test completed getter when not explicitly set."""
+        assignment2 = Assignment(
+            "Homework 1", "", "Homework",
+            datetime(2025, 10, 31), False, 0.0
+        )
+        assert assignment2.completed is False
+
+    @pytest.mark.assignment_edge
+    def test_grade_getter_default(self) -> None:
+        """Test grade getter when assignment is not completed."""
+        assignment2 = Assignment(
+            "Homework 1", "", "Homework",
+            datetime(2025, 10, 31), False, 0.0
+        )
+        assert math.isclose(assignment2.grade, 0.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_title_setter_empty(self, assignment1: Assignment) -> None:
+        """Test title setter with empty string raises ValueError."""
+        with pytest.raises(ValueError):
+            assignment1.title = ""
+        assert assignment1.title == "Homework 3"
+
+    @pytest.mark.assignment_edge
+    def test_title_setter_whitespace(self, assignment1: Assignment) -> None:
+        """Test title setter with whitespace raises ValueError."""
+        with pytest.raises(ValueError):
+            assignment1.title = " "
+        assert assignment1.title == "Homework 3"
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_percentage_invalid_low(self, assignment1: Assignment) -> None:
+        """Test grade setter with percentage below 0 raises ValueError."""
+        with pytest.raises(ValueError):
+            assignment1.grade = (-20.24,)
+        assert math.isclose(assignment1.grade, 95.18, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_percentage_invalid_high(self, assignment1: Assignment) -> None:
+        """Test grade setter with percentage above 150 raises ValueError."""
+        with pytest.raises(ValueError):
+            assignment1.grade = (200.24,)
+        assert math.isclose(assignment1.grade, 95.18, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_percentage_boundary_low(self, assignment1: Assignment) -> None:
+        """Test grade setter with percentage at lower boundary (0)."""
+        assignment1.grade = (0.0,)
+        assert math.isclose(assignment1.grade, 0.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_percentage_boundary_high(self, assignment1: Assignment) -> None:
+        """Test grade setter with percentage at upper boundary (100)."""
+        assignment1.grade = (100.0,)
+        assert math.isclose(assignment1.grade, 100.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_points_invalid_low(self, assignment1: Assignment) -> None:
+        """Test grade setter with points below 0 raises ValueError."""
+        with pytest.raises(ValueError):
+            assignment1.grade = (-3, 20)
+        assert math.isclose(assignment1.grade, 95.18, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_points_invalid_high(self, assignment1: Assignment) -> None:
+        """Test grade setter with points above total raises ValueError."""
+        with pytest.raises(ValueError):
+            assignment1.grade = (40, 20)
+        assert math.isclose(assignment1.grade, 95.18, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_points_boundary_low(self, assignment1: Assignment) -> None:
+        """Test grade setter with points at lower boundary (0)."""
+        assignment1.grade = (0, 20)
+        assert math.isclose(assignment1.grade, 0.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_points_boundary_high(self, assignment1: Assignment) -> None:
+        """Test grade setter with points at upper boundary (total)."""
+        assignment1.grade = (20, 20)
+        assert math.isclose(assignment1.grade, 100.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_points_negative_total(self, assignment1: Assignment) -> None:
+        """Test grade setter with negative total points raises ValueError."""
+        with pytest.raises(ValueError):
+            assignment1.grade = (20, -20)
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_points_zero_total(self, assignment1: Assignment) -> None:
+        """Test grade setter with zero total points raises ValueError."""
+        with pytest.raises(ValueError):
+            assignment1.grade = (20, 0)
+
+    @pytest.mark.assignment_edge
+    def test_initialization_empty_title(self) -> None:
+        """Test initialization with empty title raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment("", "", "Homework", datetime(2025, 10, 31), False, 0.0)
+
+    @pytest.mark.assignment_edge
+    def test_initialization_empty_category(self) -> None:
+        """Test initialization with empty category raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment("Homework 1", "", "", datetime(2025, 10, 31), False, 0.0)
+
+    @pytest.mark.assignment_edge
+    def test_initialization_invalid_grade_low(self) -> None:
+        """Test initialization with grade below 0 raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment(
+                "Homework 1", "", "Homework",
+                datetime(2025, 10, 31), True, -20.24
+            )
+
+    @pytest.mark.assignment_edge
+    def test_initialization_invalid_grade_high(self) -> None:
+        """Test initialization with grade above 150 raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment(
+                "Homework 1", "", "Homework",
+                datetime(2025, 10, 31), True, 200.24
+            )
+
+    @pytest.mark.assignment_edge
+    def test_initialization_completed_false_with_grade(self) -> None:
+        """Test that grade is set to 0 when completed is False."""
+        assignment2 = Assignment(
+            "Homework 1", "", "Homework",
+            datetime(2025, 10, 31), False, 90.50
+        )
+        assert assignment2.completed is False
+        assert math.isclose(assignment2.grade, 0.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_print_assignment_info_partial(self) -> None:
+        """Test print_assignment_info with minimal fields."""
+        ss = StringIO()
+        assignment2 = Assignment(
+            "Homework 1", "", "Homework",
+            datetime(2025, 10, 31), False, 0.0
+        )
+        assignment2.print_assignment_info(ss)
+        output = ss.getvalue()
+        output = mask_uuids(output)
+
+        expected = ("ID: <UUID>\nAssignment: Homework 1\n"
+                   "Category: Homework\nDue Date: 2025-10-31 00:00:00\n"
+                   "Completed? No\nGrade: 0.00%\n")
+        assert output == expected
+
+    @pytest.mark.assignment_edge
+    def test_print_assignment_info_with_description(self) -> None:
+        """Test print_assignment_info with description."""
+        ss = StringIO()
+        assignment2 = Assignment(
+            "Homework 1", "Focus on lexical analysis.", "Homework",
+            datetime(2025, 10, 31), False, 0.0
+        )
+        assignment2.print_assignment_info(ss)
+        output = ss.getvalue()
+        output = mask_uuids(output)
+
+        expected = ("ID: <UUID>\nAssignment: Homework 1\n"
+                   "Description: Focus on lexical analysis.\n"
+                   "Category: Homework\nDue Date: 2025-10-31 00:00:00\n"
+                   "Completed? No\nGrade: 0.00%\n")
+        assert output == expected
+
+    @pytest.mark.assignment_edge
+    def test_print_assignment_info_integer_grade(self) -> None:
+        """Test print_assignment_info with integer grade."""
+        ss = StringIO()
+        assignment2 = Assignment(
+            "Homework 1", "Focus on lexical analysis.", "Homework",
+            datetime(2025, 10, 31), True, 75
+        )
+        assignment2.print_assignment_info(ss)
+        output = ss.getvalue()
+        output = mask_uuids(output)
+
+        expected = ("ID: <UUID>\nAssignment: Homework 1\n"
+                   "Description: Focus on lexical analysis.\n"
+                   "Category: Homework\nDue Date: 2025-10-31 00:00:00\n"
+                   "Completed? Yes\nGrade: 75.00%\n")
+        assert output == expected
+
+    @pytest.mark.assignment_edge
+    def test_equality_same_title_different_params(self, assignment1: Assignment) -> None:
+        """Test equality with same title but different parameters."""
+        assignment2 = Assignment(
+            "Homework 1", "Focus on variables and strings.", "Homework",
+            datetime(2025, 11, 20), True, 95.18
+        )
+        assignment3 = Assignment(
+            "Homework 3", "Focus on functions.", "Homework",
+            datetime(2025, 11, 20), True, 95.18
+        )
+        assignment4 = Assignment(
+            "Homework 3", "Focus on variables and strings.", "Homework",
+            datetime(2025, 11, 19), True, 95.18
+        )
+        assignment5 = Assignment(
+            "Homework 3", "Focus on variables and strings.", "Homework",
+            datetime(2025, 11, 20), False, 92.71
+        )
+
+        assert assignment1 != assignment2
+        assert assignment1 != assignment3
+        assert assignment1 != assignment4
+        assert assignment1 != assignment5
+
+    @pytest.mark.assignment_edge
+    def test_equality_same_params_different_id(self) -> None:
+        """Test equality with same parameters but different IDs."""
+        assignment2 = Assignment(
+            "Homework 1", "Focus on variables and strings.", "Homework",
+            datetime(2025, 11, 20), True, 95.18
+        )
+        assignment3 = Assignment(
+            "Homework 1", "Focus on variables and strings.", "Homework",
+            datetime(2025, 11, 20), True, 95.18
+        )
+
+        assert assignment2 != assignment3
+
+    @pytest.mark.assignment_edge
+    def test_from_row_empty_title(self) -> None:
+        """Test from_row with empty title raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment.from_row(
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "", "",
+                "Homework", datetime(2025, 11, 20), False, 0.0
+            )
+
+    @pytest.mark.assignment_edge
+    def test_from_row_whitespace_title(self) -> None:
+        """Test from_row with whitespace title raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment.from_row(
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "   ", "",
+                "Homework", datetime(2025, 11, 20), False, 0.0
+            )
+
+    @pytest.mark.assignment_edge
+    def test_from_row_empty_category(self) -> None:
+        """Test from_row with empty category raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment.from_row(
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "Homework 3", "",
+                "", datetime(2025, 11, 20), False, 0.0
+            )
+
+    @pytest.mark.assignment_edge
+    def test_from_row_grade_too_low(self) -> None:
+        """Test from_row with grade below 0 raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment.from_row(
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "Homework 3", "",
+                "Homework", datetime(2025, 11, 20), True, -1.0
+            )
+
+    @pytest.mark.assignment_edge
+    def test_from_row_grade_too_high(self) -> None:
+        """Test from_row with grade above 150 raises ValueError."""
+        with pytest.raises(ValueError):
+            Assignment.from_row(
+                "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "Homework 3", "",
+                "Homework", datetime(2025, 11, 20), True, 200.0
+            )
+
+    @pytest.mark.assignment_edge
+    def test_from_row_zero_grade_when_not_completed(self) -> None:
+        """Test that from_row zeroes grade when completed is False."""
+        assignment = Assignment.from_row(
+            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "Homework 3", "", "Homework",
+            datetime(2025, 11, 20), False, 90.0
+        )
+
+        assert math.isclose(assignment.grade, 0.0, abs_tol=1e-9)
