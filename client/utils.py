@@ -54,6 +54,24 @@ def validate_date(date: str) -> datetime:
         raise ValueError(f"Invalid date format: {date}. Use MM-DD-YYYY format.") from e
 
 
+def validate_grade(grade: float) -> float:
+    """Checks if a grade is valid. A grade is valid if it is between 0 and 150. Returns the 
+    validated grade.
+    
+    Args:
+        grade: The grade to validate.
+        
+    Returns:
+        float: The validated grade.
+        
+    Raises:
+        ValueError: If the grade is not between 0 and 150.
+    """
+    if grade < 0.0 or grade > 150.0:
+        raise ValueError("Grade must be between 0 and 150.")
+    return grade
+
+
 def validate_date_order(start_date: datetime, end_date: datetime) -> None:
     """Checks if the start date is before the end date. Throws an error if the date order 
     is invalid.
