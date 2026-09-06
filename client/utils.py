@@ -65,7 +65,7 @@ def validate_grade(grade: float) -> float:
         float: The validated grade.
         
     Raises:
-        ValueError: If the grade is not between 0 and 100.
+        ValueError: If the grade is not between 0 and 150.
     """
     if grade < 0.0 or grade > 150.0:
         raise ValueError("Grade must be between 0 and 150.")
