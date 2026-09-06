@@ -7,8 +7,7 @@ from typing import TextIO
 
 # Local imports
 import utils
-
-from .course import Course
+from models.course import Course
 
 
 class Term:
