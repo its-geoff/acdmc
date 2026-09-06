@@ -8,8 +8,7 @@ from typing import TextIO
 
 # Local imports
 import utils
-
-from .assignment import Assignment
+from models.assignment import Assignment
 
 
 class Course:
