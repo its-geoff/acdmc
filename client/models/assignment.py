@@ -129,7 +129,7 @@ class Assignment:
             print(f"Description: {self.description}", file=output_stream)
         print(f"Category: {self.category}", file=output_stream)
         print(f"Due Date: {self.due_date}", file=output_stream)
-        print(f"Completed? {utils.bool_to_string(self.active)}", file=output_stream)
+        print(f"Completed? {utils.bool_to_string(self.completed)}", file=output_stream)
         print(f"Grade: {self.grade:.2f}%", file=output_stream)
 
     @classmethod

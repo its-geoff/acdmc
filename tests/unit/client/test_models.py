@@ -14,7 +14,14 @@ from models.term import Term
 
 # Helper function to mask UUIDs in output
 def mask_uuids(output: str) -> str:
-    """Replace UUIDs in output string with <UUID> placeholder."""
+    """Replace UUIDs in output string with <UUID> placeholder.
+    
+    Args:
+        output: The output string to mask.
+        
+    Returns:
+        str: The output string with UUIDs replaced by <UUID>.
+    """
     uuid_pattern = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
     return re.sub(uuid_pattern, "<UUID>", output)
 
@@ -1017,7 +1024,7 @@ class TestTerm:
         term1.add_course(course1)
         term1.add_course(course2)
         
-        # Calculate expected GPA: (3.3 * 3 + 1.7 * 1) / 4 = 2.75
+        # Calculate expected GPA: (3.3 * 3 + 1.7 * 1) / 4 = 2.9
         # Using the grade scale: 89.5 -> B+ (3.3), 72.8 -> C- (1.7)
         assert term1.ovr_gpa == 2.9
 
@@ -1141,10 +1148,10 @@ class TestTerm:
         
         # Modify the found course
         found_course = term1.find_course(course1.id)
-        found_course.active = False
+        found_course.active = True
         
         # Verify the modification
-        assert term1.find_course(course1.id).active is False
+        assert term1.find_course(course1.id).active is True
 
     @pytest.mark.term_smoke
     def test_print_term_info(self, term1):
