@@ -77,7 +77,7 @@ class Course:
 
         # Maps id -> Assignment
         self._assignment_list: dict[str, Assignment] = {}
-        self._num_credits: int = num_credits
+        self._num_credits: int = self._validate_num_credits(num_credits)
         self._grade_percentage: float = 0.0
         self.active: bool = active
 
@@ -440,6 +440,8 @@ class Course:
             del self._assignment_list[id]
         except KeyError as e:
             raise KeyError("Assignment not found.") from e
+        # Trigger recalculation of grade percentage by setting to None
+        self.grade_percentage = None
 
     def find_assignment(self, id: str) -> Assignment:
         """Finds an Assignment in assignment_list based on ID.
