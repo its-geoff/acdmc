@@ -1,3 +1,4 @@
+"""Tests for the models (Assignment, Course, Term)."""
 # Standard library imports
 import math
 import re
@@ -1913,3 +1914,21 @@ class TestAssignment:
         )
 
         assert math.isclose(assignment.grade, 0.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_edge
+    def test_equality_with_non_assignment(self, assignment1: Assignment) -> None:
+        """Test equality with non-Assignment object returns False."""
+        assert assignment1 != "not an assignment"
+        assert assignment1 != 123
+        assert assignment1 is not None
+
+    @pytest.mark.assignment_edge
+    def test_grade_setter_invalid_tuple_length(self, assignment1: Assignment) -> None:
+        """Test grade setter with invalid tuple length raises ValueError."""
+        with pytest.raises(ValueError, match="Grade must be a tuple of length 1"):
+            assignment1.grade = ()
+        assert math.isclose(assignment1.grade, 95.18, abs_tol=1e-9)
+
+        with pytest.raises(ValueError, match="Grade must be a tuple of length 1"):
+            assignment1.grade = (90.0, 100.0, 110.0)
+        assert math.isclose(assignment1.grade, 95.18, abs_tol=1e-9)

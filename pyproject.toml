@@ -32,5 +32,7 @@ markers = [
     "course_smoke: Smoke tests for Course model, checking basic functionality",
     "course_edge: Edge case tests for Course model, verifying edge cases",
     "assignment_smoke: Smoke tests for Assignment model, checking basic functionality",
-    "assignment_edge: Edge case tests for Assignment model, verifying edge cases"
+    "assignment_edge: Edge case tests for Assignment model, verifying edge cases",
+    "utils_smoke: Smoke tests for utils module, checking basic functionality",
+    "utils_edge: Edge case tests for utils module, verifying edge cases"
 ]
