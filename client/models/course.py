@@ -429,30 +429,30 @@ class Course:
         # Trigger recalculation of grade percentage by setting to None
         self.grade_percentage = None
 
-    def remove_assignment(self, id: str) -> None:
+    def remove_assignment(self, assignment_id: str) -> None:
         """Removes an Assignment with the specified UUID.
 
         Args:
-            id: The UUID of the Assignment to remove.
+            assignment_id: The UUID of the Assignment to remove.
         """
         try:
-            del self._assignment_list[id]
+            del self._assignment_list[assignment_id]
         except KeyError as e:
             raise KeyError("Assignment not found.") from e
         # Trigger recalculation of grade percentage by setting to None
         self.grade_percentage = None
 
-    def find_assignment(self, id: str) -> Assignment:
+    def find_assignment(self, assignment_id: str) -> Assignment:
         """Finds an Assignment in assignment_list based on ID.
 
         Args:
-            id: The UUID of the Assignment to find.
+            assignment_id: The UUID of the Assignment to find.
 
         Returns:
             Assignment: The Assignment object matching the given UUID. Throws error if not found.
         """
-        if id in self._assignment_list:
-            return self._assignment_list[id]
+        if assignment_id in self._assignment_list:
+            return self._assignment_list[assignment_id]
         else:
             raise KeyError("Assignment not found.")
 
