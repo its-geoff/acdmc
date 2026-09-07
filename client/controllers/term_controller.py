@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from datetime import datetime
+from types import MappingProxyType
+from typing import Mapping
 
 from controllers.course_controller import CourseController
 
@@ -24,14 +26,14 @@ class TermController:
         self._course_controller: CourseController | None = None
 
     @property
-    def term_list(self) -> dict[str, Term]:
-        """Get the Term list."""
-        return self._term_list
+    def term_list(self) -> Mapping[str, Term]:
+        """Get a read-only view of the Term list."""
+        return MappingProxyType(self._term_list)
 
     @property
-    def term_order(self) -> list[str]:
-        """Get the order of terms by ID."""
-        return self._term_order
+    def term_order(self) -> tuple[str]:
+        """Get a read-only view of the term order."""
+        return tuple(self._term_order)
 
     @property
     def course_controller(self) -> CourseController:
@@ -88,9 +90,9 @@ class TermController:
         term = Term(title, start_date, end_date, active)
         if title.lower() in self._title_to_id:
             raise ValueError(f"Term with the title '{title}' already exists.")
-        self.term_list[term.id] = term
+        self._term_list[term.id] = term
         self._title_to_id[term.title.lower()] = term.id
-        self.term_order.append(term.id)
+        self._term_order.append(term.id)
         
     def edit_title(self, term_id: str, new_title: str) -> None:
         """Edit the title of a Term.
@@ -103,9 +105,9 @@ class TermController:
             ValueError: If a Term with the given ID is not found or if a Term with the same
                 title already exists.
         """
-        if term_id not in self.term_list:
+        if term_id not in self._term_list:
             raise ValueError(f"Term with ID '{term_id}' not found.")
-        term = self.term_list.get(term_id)
+        term = self._term_list.get(term_id)
         old_title_lower = term.title.lower()
         existing_term_id = self._title_to_id.get(new_title.lower())
         if existing_term_id is not None and existing_term_id != term_id:
@@ -124,9 +126,9 @@ class TermController:
         Raises:
             ValueError: If a Term with the given ID is not found.
         """
-        if term_id not in self.term_list:
+        if term_id not in self._term_list:
             raise ValueError(f"Term with ID '{term_id}' not found.")
-        self.term_list[term_id].start_date = new_start_date
+        self._term_list[term_id].start_date = new_start_date
 
     def edit_end_date(self, term_id: str, new_end_date: datetime) -> None:
         """Edit the end date of a Term.
@@ -138,9 +140,9 @@ class TermController:
         Raises:
             ValueError: If a Term with the given ID is not found.
         """
-        if term_id not in self.term_list:
+        if term_id not in self._term_list:
             raise ValueError(f"Term with ID '{term_id}' not found.")
-        self.term_list[term_id].end_date = new_end_date
+        self._term_list[term_id].end_date = new_end_date
 
     def edit_active(self, term_id: str, active: bool) -> None:
         """Edit the active status of a Term.
@@ -152,9 +154,9 @@ class TermController:
         Raises:
             ValueError: If a Term with the given ID is not found.
         """
-        if term_id not in self.term_list:
+        if term_id not in self._term_list:
             raise ValueError(f"Term with ID '{term_id}' not found.")
-        self.term_list[term_id].active = active
+        self._term_list[term_id].active = active
 
     def remove_term(self, title: str) -> None:
         """Remove a term from the Term list.
@@ -167,16 +169,16 @@ class TermController:
         """
         term_id = self.get_term_id(title)
 
-        if term_id not in self.term_list:
+        if term_id not in self._term_list:
             raise ValueError(f"Term with title '{title}' not found.")
 
         if (self._active_term is not None and self._active_term.id == term_id):
             self._active_term = None
             self._course_controller = None
-        
-        del self.term_list[term_id]
+
+        del self._term_list[term_id]
         del self._title_to_id[title.lower()]
-        self.term_order.remove(term_id)
+        self._term_order.remove(term_id)
 
     def find_term(self, title: str) -> Term:
         """Find a Term by title.
@@ -188,7 +190,7 @@ class TermController:
             The Term with the given title.
         """
         id = self.get_term_id(title)
-        return self.term_list[id]
+        return self._term_list[id]
 
     def select_term(self, title: str) -> None:
         """Select a Term by title.
