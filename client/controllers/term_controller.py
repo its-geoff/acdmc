@@ -5,7 +5,7 @@ from datetime import datetime
 from types import MappingProxyType
 from typing import Mapping
 
-from controllers.course_controller import CourseController
+# from controllers.course_controller import CourseController
 
 # Local imports
 from models.term import Term
@@ -23,7 +23,7 @@ class TermController:
         # Order of terms by ID
         self._term_order: list[str] = []
         self._active_term: Term | None = None
-        self._course_controller: CourseController | None = None
+        # self._course_controller: CourseController | None = None
 
     @property
     def term_list(self) -> Mapping[str, Term]:
@@ -35,16 +35,16 @@ class TermController:
         """Get a read-only view of the term order."""
         return tuple(self._term_order)
 
-    @property
-    def course_controller(self) -> CourseController:
-        """Get the Course controller.
+    # @property
+    # def course_controller(self) -> CourseController:
+    #     """Get the Course controller.
         
-        Raises:
-            ValueError: If no Term is selected.
-        """
-        if self._course_controller is None:
-            raise ValueError("No Term selected.")
-        return self._course_controller
+    #     Raises:
+    #         ValueError: If no Term is selected.
+    #     """
+    #     if self._course_controller is None:
+    #         raise ValueError("No Term selected.")
+    #     return self._course_controller
 
     @property
     def active_term(self) -> Term:
@@ -174,7 +174,7 @@ class TermController:
 
         if (self._active_term is not None and self._active_term.id == term_id):
             self._active_term = None
-            self._course_controller = None
+            # self._course_controller = None
 
         del self._term_list[term_id]
         del self._title_to_id[title.lower()]
@@ -192,18 +192,18 @@ class TermController:
         id = self.get_term_id(title)
         return self._term_list[id]
 
-    def select_term(self, title: str) -> None:
-        """Select a Term by title.
+    # def select_term(self, title: str) -> None:
+    #     """Select a Term by title.
         
-        Args:
-            title: The title of the Term to select.
+    #     Args:
+    #         title: The title of the Term to select.
 
-        Raises:
-            ValueError: If a Term with the given ID is not found.
-        """
-        try:
-            term = self.find_term(title)
-            self._active_term = term
-            self._course_controller = CourseController(self._active_term)
-        except ValueError as e:
-            raise ValueError(f"Term with title '{title}' not found.") from e
+    #     Raises:
+    #         ValueError: If a Term with the given ID is not found.
+    #     """
+    #     try:
+    #         term = self.find_term(title)
+    #         self._active_term = term
+    #         self._course_controller = CourseController(self._active_term)
+    #     except ValueError as e:
+    #         raise ValueError(f"Term with title '{title}' not found.") from e
