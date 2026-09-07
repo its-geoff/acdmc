@@ -6,7 +6,6 @@ from types import MappingProxyType
 from typing import Mapping
 
 # from controllers.course_controller import CourseController
-
 # Local imports
 from models.term import Term
 
