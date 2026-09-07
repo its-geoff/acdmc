@@ -1,6 +1,5 @@
 """Tests for the TermController class."""
 # Standard library imports
-import math
 import re
 from datetime import datetime
 
@@ -62,8 +61,14 @@ class TestTermController:
         id = controller.get_term_id("Fall 2025")
 
         # Check if the ID is in the correct UUID format
-        uuid_pattern = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-        assert re.match(uuid_pattern, id)
+        uuid_pattern = r"""
+            ^[0-9a-fA-F]{8}
+            -[0-9a-fA-F]{4}
+            -[0-9a-fA-F]{4}
+            -[0-9a-fA-F]{4}
+            -[0-9a-fA-F]{12}$
+        """
+        assert re.match(uuid_pattern, id, re.VERBOSE)
 
     @pytest.mark.term_controller_smoke
     def test_term_order_getter(self, controller):
@@ -247,7 +252,9 @@ class TestTermController:
 
     @pytest.mark.term_controller_edge
     def test_edit_title_already_exists_different_case(self, controller):
-        """Test that edit_title raises ValueError when new title already exists (case insensitive)."""
+        """Test that edit_title raises ValueError when new title already 
+        exists (case insensitive).
+        """
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         controller.add_term("Spring 2026", datetime(2026, 1, 2), datetime(2026, 5, 24), True)
         
