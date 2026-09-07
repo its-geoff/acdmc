@@ -418,6 +418,9 @@ class Course:
 
         Args:
             assignment: The Assignment that will be added to assignment_list.
+
+        Raises:
+            ValueError: If the Assignment with an ID already exists in the Course.
         """
         key = assignment.id
         insert = key not in self._assignment_list
@@ -434,6 +437,9 @@ class Course:
 
         Args:
             assignment_id: The UUID of the Assignment to remove.
+
+        Raises:
+            KeyError: If the Assignment cannot be found.
         """
         try:
             del self._assignment_list[assignment_id]
@@ -450,6 +456,9 @@ class Course:
 
         Returns:
             Assignment: The Assignment object matching the given UUID. Throws error if not found.
+
+        Raises:
+            KeyError: If the Assignment cannot be found.
         """
         if assignment_id in self._assignment_list:
             return self._assignment_list[assignment_id]
