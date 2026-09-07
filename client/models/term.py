@@ -7,8 +7,7 @@ from typing import TextIO
 
 # Local imports
 import utils
-
-from .course import Course
+from models.course import Course
 
 
 class Term:
@@ -140,28 +139,28 @@ class Term:
 
         self._course_list[key] = course
 
-    def remove_course(self, id: str) -> None:
+    def remove_course(self, course_id: str) -> None:
         """Removes a Course with the specified UUID.
 
         Args:
-            id: The UUID of the Course to remove.
+            course_id: The UUID of the Course to remove.
         """
         try:
-            del self._course_list[id]
+            del self._course_list[course_id]
         except KeyError as e:
             raise KeyError("Course not found.") from e
 
-    def find_course(self, id: str) -> Course:
+    def find_course(self, course_id: str) -> Course:
         """Finds a Course in course_list based on ID.
 
         Args:
-            id: The UUID of the Course to find.
+            course_id: The UUID of the Course to find.
 
         Returns:
             Course: The Course object matching the given UUID. Throws error if not found.
         """
-        if id in self._course_list:
-            return self._course_list[id]
+        if course_id in self._course_list:
+            return self._course_list[course_id]
         else:
             raise KeyError("Course not found.")
 
