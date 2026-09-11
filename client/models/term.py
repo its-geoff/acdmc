@@ -157,7 +157,7 @@ class Term:
             course_id: The UUID of the Course to find.
 
         Returns:
-            Course: The Course object matching the given UUID. Throws error if not found.
+            Course: The Course object matching the given UUID. Raises error if not found.
         """
         if course_id in self._course_list:
             return self._course_list[course_id]
