@@ -198,7 +198,7 @@ class CourseController:
         course = self._term.find_course(course_id)
         course.active = new_active
         
-    def remove_course(title: str) -> None:
+    def remove_course(self, title: str) -> None:
         """Remove a Course by title.
         
         Args:
@@ -229,7 +229,6 @@ class CourseController:
             Course: The Course with the given title.
         """
         course_id = self.get_course_id(title)
-        if course_id not in 
         return self._term.find_course(course_id)
     
     def select_course(self, title: str) -> None:
@@ -242,5 +241,5 @@ class CourseController:
             KeyError: If the Course with the given ID is not found.
         """
         course_id = self.get_course_id(title)
-        self._active_course = self._term.find_course(id)
+        self._active_course = self._term.find_course(course_id)
         self._assignment_controller = AssignmentController(self._active_course)
