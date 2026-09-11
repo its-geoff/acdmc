@@ -8,6 +8,7 @@ from typing import Mapping
 # Local imports
 from controllers.course_controller import CourseController
 from models.term import Term
+from utils import validate_date_order
 
 
 class TermController:
@@ -84,6 +85,7 @@ class TermController:
 
         Raises:
             ValueError: If a Term with the same title already exists.
+            RuntimeError: If there is an unexpected error when trying to add the Term.
         """
         term = Term(title, start_date, end_date, active)
         if title.lower() in self._title_to_id:
@@ -108,7 +110,10 @@ class TermController:
         term = self._term_list.get(term_id)
         old_title_lower = term.title.lower()
         
-        if new_title.lower() in self._title_to_id:
+        if (
+            new_title.lower() in self._title_to_id 
+            and self._title_to_id[new_title.lower()] != term_id
+        ):
             raise ValueError(f"Term with the title '{new_title}' already exists.")
         
         term.title = new_title
@@ -124,10 +129,13 @@ class TermController:
 
         Raises:
             KeyError: If a Term with the given ID is not found.
+            ValueError: If the new start date is after the end date.
         """
         if term_id not in self._term_list:
             raise KeyError(f"Term with ID '{term_id}' not found.")
-        self._term_list[term_id].start_date = new_start_date
+        term = self._term_list[term_id]
+        validate_date_order(new_start_date, term.end_date)
+        term.start_date = new_start_date
 
     def edit_end_date(self, term_id: str, new_end_date: datetime) -> None:
         """Edit the end date of a Term.
@@ -138,10 +146,13 @@ class TermController:
 
         Raises:
             KeyError: If a Term with the given ID is not found.
+            ValueError: If the new end date is before the start date.
         """
         if term_id not in self._term_list:
             raise KeyError(f"Term with ID '{term_id}' not found.")
-        self._term_list[term_id].end_date = new_end_date
+        term = self._term_list[term_id]
+        validate_date_order(term.start_date, new_end_date)
+        term.end_date = new_end_date
 
     def edit_active(self, term_id: str, active: bool) -> None:
         """Edit the active status of a Term.
@@ -166,10 +177,9 @@ class TermController:
         Raises:
             KeyError: If a Term with the given title is not found.
         """
-        term_id = self.get_term_id(title)
-
-        if term_id not in self._term_list:
+        if title.lower() not in self._title_to_id:
             raise KeyError(f"Term with title '{title}' not found.")
+        term_id = self.get_term_id(title)
 
         if (self._active_term is not None and self._active_term.id == term_id):
             self._active_term = None
@@ -187,6 +197,9 @@ class TermController:
             
         Returns:
             The Term with the given title.
+            
+        Raises:
+            KeyError: If a Term with the given title is not found.
         """
         term_id = self.get_term_id(title)
         return self._term_list[term_id]

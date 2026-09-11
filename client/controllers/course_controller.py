@@ -7,6 +7,7 @@ from datetime import datetime
 # from controllers.assignment_controller import AssignmentController
 from models.course import Course
 from models.term import Term
+from utils import validate_date_order
 
 
 class CourseController:
@@ -20,6 +21,19 @@ class CourseController:
         self._course_order: list[str] = []
         self._active_course: Course | None = None
         # self._assignment_controller: AssignmentController | None = None
+        
+        # Initialize controller indexes from existing courses in the term
+        self._initialize_indexes_from_term()
+
+    def _initialize_indexes_from_term(self) -> None:
+        """Initialize controller indexes from existing courses in the term.
+        
+        This ensures that when a CourseController is created for a term that
+        already has courses, the controller's indexes are populated correctly.
+        """
+        for course_id, course in self._term._course_list.items():
+            self._title_to_id[course.title.lower()] = course_id
+            self._course_order.append(course_id)
 
     @property
     def course_order(self) -> tuple[str]:
@@ -85,6 +99,7 @@ class CourseController:
             active: Whether the Course being added is active.
 
         Raises:
+            ValueError: If a Course with the same title already exists.
             RuntimeError: If there is an unexpected error when trying to add the Course.
         """
         course = Course(title, description, start_date, end_date, num_credits, active)
@@ -103,7 +118,7 @@ class CourseController:
         """Edit the title of a Course.
         
         Args:
-            id: The ID of the Course to edit.
+            course_id: The ID of the Course to edit.
             new_title: The new title of the Course.
             
         Raises:
@@ -115,7 +130,10 @@ class CourseController:
         course = self._term.find_course(course_id)
         old_title_lower = course.title.lower()
         
-        if new_title.lower() in self._title_to_id:
+        if (
+            new_title.lower() in self._title_to_id 
+            and self._title_to_id[new_title.lower()] != course_id
+        ):
             raise ValueError(f"Course with title {new_title} already exists.")
 
         course.title = new_title
@@ -150,6 +168,7 @@ class CourseController:
         if course_id not in self._term._course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
+        validate_date_order(new_start_date, course.end_date)
         course.start_date = new_start_date
         
     def edit_end_date(self, course_id: str, new_end_date: datetime) -> None:
@@ -165,6 +184,7 @@ class CourseController:
         if course_id not in self._term._course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
+        validate_date_order(course.start_date, new_end_date)
         course.end_date = new_end_date
         
     def edit_num_credits(self, course_id: str, new_num_credits: int) -> None:
@@ -206,7 +226,7 @@ class CourseController:
         Raises:
             KeyError: If a Course with the given title is not found.
         """
-        if title not in self._title_to_id:
+        if title.lower() not in self._title_to_id:
             raise KeyError(f"Course with title '{title}' not found.")
         course_id = self.get_course_id(title)
         
@@ -226,6 +246,9 @@ class CourseController:
             
         Returns:
             Course: The Course with the given title.
+            
+        Raises:
+            KeyError: If a Course with the given title is not found.
         """
         course_id = self.get_course_id(title)
         return self._term.find_course(course_id)
