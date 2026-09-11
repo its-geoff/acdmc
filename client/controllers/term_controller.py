@@ -66,13 +66,13 @@ class TermController:
             The ID of the Term.
 
         Raises:
-            ValueError: If the Term is not found.
+            KeyError: If the Term is not found.
         """
         title_lower = title.lower()
         term_id = self._title_to_id.get(title_lower)
         if term_id is not None:
             return term_id
-        raise ValueError("Term not found.")
+        raise KeyError(f"Term with title '{title}' not found.")
 
     def add_term(self, title: str, start_date: datetime, end_date: datetime, active: bool) -> None:
         """Add a Term to the Term list and verify Term title uniqueness.
@@ -101,16 +101,17 @@ class TermController:
             new_title: The new title of the Term.
 
         Raises:
-            ValueError: If a Term with the given ID is not found or if a Term with the same
-                title already exists.
+            KeyError: If a Term with the given ID is not found
+            ValueError: If a Term with the same title already exists.
         """
         if term_id not in self._term_list:
-            raise ValueError(f"Term with ID '{term_id}' not found.")
+            raise KeyError(f"Term with ID '{term_id}' not found.")
         term = self._term_list.get(term_id)
         old_title_lower = term.title.lower()
-        existing_term_id = self._title_to_id.get(new_title.lower())
-        if existing_term_id is not None and existing_term_id != term_id:
+        
+        if new_title.lower() in self._title_to_id:
             raise ValueError(f"Term with the title '{new_title}' already exists.")
+        
         term.title = new_title
         del self._title_to_id[old_title_lower]
         self._title_to_id[term.title.lower()] = term_id
@@ -123,10 +124,10 @@ class TermController:
             new_start_date: The new start date of the Term.
 
         Raises:
-            ValueError: If a Term with the given ID is not found.
+            KeyError: If a Term with the given ID is not found.
         """
         if term_id not in self._term_list:
-            raise ValueError(f"Term with ID '{term_id}' not found.")
+            raise KeyError(f"Term with ID '{term_id}' not found.")
         self._term_list[term_id].start_date = new_start_date
 
     def edit_end_date(self, term_id: str, new_end_date: datetime) -> None:
@@ -137,10 +138,10 @@ class TermController:
             new_end_date: The new end date of the Term.
 
         Raises:
-            ValueError: If a Term with the given ID is not found.
+            KeyError: If a Term with the given ID is not found.
         """
         if term_id not in self._term_list:
-            raise ValueError(f"Term with ID '{term_id}' not found.")
+            raise KeyError(f"Term with ID '{term_id}' not found.")
         self._term_list[term_id].end_date = new_end_date
 
     def edit_active(self, term_id: str, active: bool) -> None:
@@ -151,10 +152,10 @@ class TermController:
             active: The new active status of the Term.
 
         Raises:
-            ValueError: If a Term with the given ID is not found.
+            KeyError: If a Term with the given ID is not found.
         """
         if term_id not in self._term_list:
-            raise ValueError(f"Term with ID '{term_id}' not found.")
+            raise KeyError(f"Term with ID '{term_id}' not found.")
         self._term_list[term_id].active = active
 
     def remove_term(self, title: str) -> None:
@@ -164,12 +165,12 @@ class TermController:
             title: The title of the Term to remove.
 
         Raises:
-            ValueError: If a Term with the given title is not found.
+            KeyError: If a Term with the given title is not found.
         """
         term_id = self.get_term_id(title)
 
         if term_id not in self._term_list:
-            raise ValueError(f"Term with title '{title}' not found.")
+            raise KeyError(f"Term with title '{title}' not found.")
 
         if (self._active_term is not None and self._active_term.id == term_id):
             self._active_term = None
@@ -188,8 +189,8 @@ class TermController:
         Returns:
             The Term with the given title.
         """
-        id = self.get_term_id(title)
-        return self._term_list[id]
+        term_id = self.get_term_id(title)
+        return self._term_list[term_id]
 
     def select_term(self, title: str) -> None:
         """Select a Term by title.
@@ -198,11 +199,8 @@ class TermController:
             title: The title of the Term to select.
 
         Raises:
-            ValueError: If a Term with the given ID is not found.
+            KeyError: If a Term with the given ID is not found.
         """
-        try:
-            term = self.find_term(title)
-            self._active_term = term
-            self._course_controller = CourseController(self._active_term)
-        except ValueError as e:
-            raise ValueError(f"Term with title '{title}' not found.") from e
+        term = self.find_term(title)
+        self._active_term = term
+        self._course_controller = CourseController(self._active_term)
