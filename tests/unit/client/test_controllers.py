@@ -4,12 +4,12 @@ import re
 from datetime import datetime
 
 import pytest
+from controllers.course_controller import CourseController
 
 # Local imports
 from controllers.term_controller import TermController
-from controllers.course_controller import CourseController
-from models.term import Term
 from models.course import Course
+from models.term import Term
 
 
 class TestCourseController:
@@ -336,7 +336,9 @@ class TestCourseController:
 
     # @pytest.mark.course_controller_smoke
     # def test_assignment_controller_property(self, controller):
-    #     """Test that assignment_controller property returns AssignmentController when course is selected."""
+    #     """Test that assignment_controller property returns AssignmentController 
+    #     when course is selected.
+    #     """
     #     controller.add_course(
     #         "Calculus I",
     #         "Introduction to calculus",
