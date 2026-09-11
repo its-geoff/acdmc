@@ -455,7 +455,7 @@ class Course:
             assignment_id: The UUID of the Assignment to find.
 
         Returns:
-            Assignment: The Assignment object matching the given UUID. Throws error if not found.
+            Assignment: The Assignment object matching the given UUID. Raises error if not found.
 
         Raises:
             KeyError: If the Assignment cannot be found.
