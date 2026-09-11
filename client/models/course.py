@@ -75,7 +75,7 @@ class Course:
         utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Assignment
-        self._assignment_list: dict[str, Assignment] = {}
+        self.assignment_list: dict[str, Assignment] = {}
         self._num_credits: int = self._validate_num_credits(num_credits)
         self._grade_percentage: float = 0.0
         self.active: bool = active
@@ -288,7 +288,7 @@ class Course:
         output: dict[str, float] = {}
 
         # Add values from assignment list to totals and counts
-        for _, assignment in self._assignment_list.items():
+        for _, assignment in self.assignment_list.items():
             if not assignment.completed:
                 continue
 
@@ -312,7 +312,7 @@ class Course:
         Returns:
             float: The course grade percentage.
         """
-        if not self._assignment_list or self._calculate_completed_assignments() == 0:
+        if not self.assignment_list or self._calculate_completed_assignments() == 0:
             return 0.0
 
         total = 0.0
@@ -386,7 +386,7 @@ class Course:
         """
         completed_assignments = 0
 
-        for _, assignment in self._assignment_list.items():
+        for _, assignment in self.assignment_list.items():
             if assignment.completed:
                 completed_assignments += 1
             
@@ -407,9 +407,9 @@ class Course:
         print(f"Grade Percentage: {self.grade_percentage:.2f}%", file=output_stream)
         print(f"Letter Grade: {self.letter_grade}", file=output_stream)
         print(f"GPA Value: {self.gpa_value:.1f}", file=output_stream)
-        print(f"Total Assignments: {len(self._assignment_list)}", file=output_stream)
+        print(f"Total Assignments: {len(self.assignment_list)}", file=output_stream)
         print(f"Incomplete Assignments: "
-            f"{len(self._assignment_list) - self._calculate_completed_assignments()}",
+            f"{len(self.assignment_list) - self._calculate_completed_assignments()}",
             file=output_stream)
         print(f"Current? {utils.bool_to_string(self.active)}", file=output_stream)
 
@@ -423,12 +423,12 @@ class Course:
             ValueError: If the Assignment with an ID already exists in the Course.
         """
         key = assignment.id
-        insert = key not in self._assignment_list
+        insert = key not in self.assignment_list
 
         if not insert:
             raise ValueError(f"Assignment with ID {key} already exists in Course {self.title}.")
 
-        self._assignment_list[key] = assignment
+        self.assignment_list[key] = assignment
         # Trigger recalculation of grade percentage by setting to None
         self.grade_percentage = None
 
@@ -442,7 +442,7 @@ class Course:
             KeyError: If the Assignment cannot be found.
         """
         try:
-            del self._assignment_list[assignment_id]
+            del self.assignment_list[assignment_id]
         except KeyError as e:
             raise KeyError("Assignment not found.") from e
         # Trigger recalculation of grade percentage by setting to None
@@ -460,8 +460,8 @@ class Course:
         Raises:
             KeyError: If the Assignment cannot be found.
         """
-        if assignment_id in self._assignment_list:
-            return self._assignment_list[assignment_id]
+        if assignment_id in self.assignment_list:
+            return self.assignment_list[assignment_id]
         else:
             raise KeyError("Assignment not found.")
 
