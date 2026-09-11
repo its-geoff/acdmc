@@ -164,6 +164,7 @@ class CourseController:
             
         Raises:
             KeyError: If a Course with the given ID is not found.
+            ValueError: If the new start date is after the end date.
         """
         if course_id not in self._term._course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
@@ -180,6 +181,7 @@ class CourseController:
             
         Raises:
             KeyError: If a Course with the given ID is not found.
+            ValueError: If the new end date is before the start date.
         """
         if course_id not in self._term._course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
