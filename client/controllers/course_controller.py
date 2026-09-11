@@ -13,7 +13,6 @@ class CourseController:
     """Controller for managing Course operations."""
 
     def __init__(self, term: Term) -> None:
-        """Initialize the CourseController."""
         self._term = term
         # Maps title (lowercase) -> id; only used internally
         self._title_to_id: dict[str, str] = {}

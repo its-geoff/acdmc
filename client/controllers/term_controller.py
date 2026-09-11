@@ -14,7 +14,6 @@ class TermController:
     """Controller for managing Term operations."""
     
     def __init__(self) -> None:
-        """Initialize the TermController."""
         # Maps id -> Term
         self._term_list: dict[str, Term] = {}
         # Maps title (lowercase) -> id; only used internally
