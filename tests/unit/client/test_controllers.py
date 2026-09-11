@@ -30,9 +30,12 @@ class TestCourseController:
         )
 
     @pytest.fixture
-    def controller(self, term) -> CourseController:
+    def controller(self, term: Term) -> CourseController:
         """Create a CourseController instance for testing.
         
+        Args:
+            term: A sample Term instance.
+            
         Returns:
             CourseController: A fresh CourseController instance.
         """
