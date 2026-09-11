@@ -153,8 +153,8 @@ class TestTermController:
         term_list = controller.term_list
         assert len(term_list) == 1
 
-        # Raise ValueError since the term is not in the list
-        with pytest.raises(ValueError):
+        # Raise KeyError since the term is not in the list
+        with pytest.raises(KeyError):
             controller.get_term_id("Fall 2025")
 
         id2 = controller.get_term_id("Spring 2026")
@@ -216,11 +216,11 @@ class TestTermController:
 
     @pytest.mark.term_controller_edge
     def test_term_id_getter_not_found(self, controller):
-        """Test that get_term_id raises ValueError when term not found."""
+        """Test that get_term_id raises KeyError when term not found."""
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         controller.add_term("Spring 2026", datetime(2026, 1, 2), datetime(2026, 5, 24), True)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             controller.get_term_id("Fall 2026")
 
     @pytest.mark.term_controller_edge
@@ -265,52 +265,52 @@ class TestTermController:
 
     @pytest.mark.term_controller_edge
     def test_edit_title_not_found(self, controller):
-        """Test that edit_title raises ValueError when term ID not found."""
+        """Test that edit_title raises KeyError when term ID not found."""
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             controller.edit_title("non-existent-id", "Winter 2026")
 
     @pytest.mark.term_controller_edge
     def test_edit_start_date_not_found(self, controller):
-        """Test that edit_start_date raises ValueError when term ID not found."""
+        """Test that edit_start_date raises KeyError when term ID not found."""
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             controller.edit_start_date("non-existent-id", datetime(2025, 8, 20))
 
     @pytest.mark.term_controller_edge
     def test_edit_end_date_not_found(self, controller):
-        """Test that edit_end_date raises ValueError when term ID not found."""
+        """Test that edit_end_date raises KeyError when term ID not found."""
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             controller.edit_end_date("non-existent-id", datetime(2025, 12, 20))
 
     @pytest.mark.term_controller_edge
     def test_edit_active_not_found(self, controller):
-        """Test that edit_active raises ValueError when term ID not found."""
+        """Test that edit_active raises KeyError when term ID not found."""
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             controller.edit_active("non-existent-id", True)
 
     @pytest.mark.term_controller_edge
     def test_remove_term_not_found(self, controller):
-        """Test that remove_term raises ValueError when term not found."""
+        """Test that remove_term raises KeyError when term not found."""
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         controller.add_term("Spring 2026", datetime(2026, 1, 2), datetime(2026, 5, 24), True)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             controller.remove_term("Fall 2026")
 
     @pytest.mark.term_controller_edge
     def test_find_term_not_found(self, controller):
-        """Test that find_term raises ValueError when term not found."""
+        """Test that find_term raises KeyError when term not found."""
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         controller.add_term("Spring 2026", datetime(2026, 1, 2), datetime(2026, 5, 24), True)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             controller.find_term("Fall 2026")
 
     # @pytest.mark.term_controller_edge
