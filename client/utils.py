@@ -73,7 +73,7 @@ def validate_grade(grade: float) -> float:
 
 
 def validate_date_order(start_date: datetime, end_date: datetime) -> None:
-    """Checks if the start date is before the end date. Throws an error if the date order 
+    """Checks if the start date is before the end date. Raises an error if the date order 
     is invalid.
 
     Args:
