@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 from datetime import datetime
-from types import MappingProxyType
-from typing import Mapping
+
+from models.assignment import Assignment
 
 # Local imports
 from models.course import Course
-from models.assignment import Assignment
 
 
 class AssignmentController:
@@ -163,14 +162,7 @@ class AssignmentController:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         assignment = self._course.find_assignment(assignment_id)
         assignment.due_date = new_due_date
-        
-    def add_grade(title: str, grade: float) -> None:
-        if title not in self._course.assignment_list:
-            raise KeyError(f"Assignment with title '{title}' not found.")
-        assignment = self._course.find_assignment(title)
-        assignment.grade = (grade,)
-        assignment.completed = True
-        
+
     def add_grade(self, title: str, *, grade=None, points_earned=None, total_points=None):
         """Adds a grade to a selected assignment and sets it as complete.
         
