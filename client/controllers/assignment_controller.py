@@ -93,7 +93,7 @@ class AssignmentController:
             KeyError: If an Assignment with the given ID is not found.
             ValueError: If an Assignment with the same title already exists.
         """
-        if assignment_id not in self._course._assignment_list:
+        if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         assignment = self._course.find_assignment(assignment_id)
         old_title_lower = assignment.title.lower()
@@ -115,7 +115,7 @@ class AssignmentController:
         Raises:
             KeyError: If an Assignment with the given ID is not found.
         """
-        if assignment_id not in self._course._assignment_list:
+        if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         assignment = self._course.find_assignment(assignment_id)
         # Checks that description is not empty, whitespace, or unchanged
@@ -135,7 +135,7 @@ class AssignmentController:
             KeyError: If an Assignment with the given ID is not found.
             ValueError: If the new category is empty, whitespace, or not found in grade weights.
         """
-        if assignment_id not in self._course._assignment_list:
+        if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         assignment = self._course.find_assignment(assignment_id)
         
@@ -159,13 +159,13 @@ class AssignmentController:
         Raises:
             KeyError: If an Assignment with the given ID is not found.
         """
-        if assignment_id not in self._course._assignment_list:
+        if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         assignment = self._course.find_assignment(assignment_id)
         assignment.due_date = new_due_date
         
     def add_grade(title: str, grade: float) -> None:
-        if title not in self._course._assignment_list:
+        if title not in self._course.assignment_list:
             raise KeyError(f"Assignment with title '{title}' not found.")
         assignment = self._course.find_assignment(title)
         assignment.grade = (grade,)
@@ -185,7 +185,7 @@ class AssignmentController:
             ValueError: If the grade is not a valid float or is outside the range [0, 100].
         """
         assignment_id = self.get_assignment_id(title)
-        if assignment_id not in self._course._assignment_list:
+        if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         assignment = self._course.find_assignment(assignment_id)
         
@@ -211,7 +211,7 @@ class AssignmentController:
             KeyError: If an Assignment with the given title is not found.
         """
         assignment_id = self.get_assignment_id(title)
-        if assignment_id not in self._course._assignment_list:
+        if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         assignment = self._course.find_assignment(assignment_id)
         assignment.grade = 0.0
@@ -227,7 +227,7 @@ class AssignmentController:
             KeyError: If an Assignment with the given title is not found.
         """
         assignment_id = self.get_assignment_id(title)
-        if assignment_id not in self._course._assignment_list:
+        if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         self._course.remove_assignment(assignment_id)
         del self._title_to_id[title.lower()]
@@ -245,6 +245,6 @@ class AssignmentController:
             KeyError: If an Assignment with the given title is not found.
         """
         assignment_id = self.get_assignment_id(title)
-        if assignment_id not in self._course._assignment_list:
+        if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         return self._course.find_assignment(assignment_id)

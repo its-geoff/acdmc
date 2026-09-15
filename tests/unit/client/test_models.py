@@ -638,7 +638,7 @@ class TestCourse:
         """Test assignment list getter returns correct size."""
         course1.add_assignment(assignment1)
         course1.add_assignment(assignment2)
-        assert len(course1._assignment_list) == 2
+        assert len(course1.assignment_list) == 2
 
     @pytest.mark.course_smoke
     def test_grade_weights_getter(self, course1):
@@ -802,7 +802,7 @@ class TestCourse:
     def test_add_assignment(self, course1, assignment1):
         """Test adding an assignment to course."""
         course1.add_assignment(assignment1)
-        assert len(course1._assignment_list) == 1
+        assert len(course1.assignment_list) == 1
 
         assert math.isclose(course1.grade_percentage, 95.18, abs_tol=1e-9)
         assert course1.letter_grade == "A"
@@ -816,8 +816,8 @@ class TestCourse:
         id = assignment1.id
         course1.remove_assignment(id)
 
-        assert len(course1._assignment_list) == 1
-        assert id not in course1._assignment_list
+        assert len(course1.assignment_list) == 1
+        assert id not in course1.assignment_list
 
         assert math.isclose(course1.grade_percentage, 0.0, abs_tol=1e-9)
         assert course1.letter_grade == "N/A"
@@ -841,8 +841,8 @@ class TestCourse:
         course1.remove_assignment(id)
         
         # Verify grade recalculates based on remaining completed assignment
-        assert len(course1._assignment_list) == 2
-        assert id not in course1._assignment_list
+        assert len(course1.assignment_list) == 2
+        assert id not in course1.assignment_list
         assert math.isclose(course1.grade_percentage, 85.5, abs_tol=1e-9)
         assert course1.letter_grade == "B"
         assert math.isclose(course1.gpa_value, 3.0, abs_tol=1e-9)
@@ -1623,7 +1623,7 @@ class TestTerm:
         )
         
         term1.add_course(course1)
-        assert len(term1._course_list) == 1
+        assert len(term1.course_list) == 1
 
     @pytest.mark.term_smoke
     def test_remove_course(self, term1):
@@ -1643,8 +1643,8 @@ class TestTerm:
         term1.remove_course(course_id)
         
         # Check size and success of removal
-        assert len(term1._course_list) == 1
-        assert course_id not in term1._course_list
+        assert len(term1.course_list) == 1
+        assert course_id not in term1.course_list
 
     @pytest.mark.term_smoke
     def test_find_course(self, term1):

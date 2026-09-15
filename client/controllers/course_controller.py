@@ -31,7 +31,7 @@ class CourseController:
         This ensures that when a CourseController is created for a term that
         already has courses, the controller's indexes are populated correctly.
         """
-        for course_id, course in self._term._course_list.items():
+        for course_id, course in self._term.course_list.items():
             self._title_to_id[course.title.lower()] = course_id
             self._course_order.append(course_id)
 
@@ -125,7 +125,7 @@ class CourseController:
             KeyError: If a Course with the given ID is not found.
             ValueError: If a Course with the same title already exists.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         old_title_lower = course.title.lower()
@@ -150,7 +150,7 @@ class CourseController:
         Raises:
             KeyError: If a Course with the given ID is not found.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         course.description = new_description
@@ -166,7 +166,7 @@ class CourseController:
             KeyError: If a Course with the given ID is not found.
             ValueError: If the new start date is after the end date.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         validate_date_order(new_start_date, course.end_date)
@@ -183,7 +183,7 @@ class CourseController:
             KeyError: If a Course with the given ID is not found.
             ValueError: If the new end date is before the start date.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         validate_date_order(course.start_date, new_end_date)
@@ -199,7 +199,7 @@ class CourseController:
         Raises:
             KeyError: If a Course with the given ID is not found.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         course.num_credits = new_num_credits
@@ -214,7 +214,7 @@ class CourseController:
         Raises:
             KeyError: If a Course with the given ID is not found.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         course.active = new_active
