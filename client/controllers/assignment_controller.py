@@ -3,9 +3,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from models.assignment import Assignment
-
 # Local imports
+from models.assignment import Assignment
 from models.course import Course
 
 
