@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 
 # Local imports
-# from controllers.assignment_controller import AssignmentController
+from controllers.assignment_controller import AssignmentController
 from models.course import Course
 from models.term import Term
 from utils import validate_date_order
@@ -20,7 +20,7 @@ class CourseController:
         # Order of Courses by ID
         self._course_order: list[str] = []
         self._active_course: Course | None = None
-        # self._assignment_controller: AssignmentController | None = None
+        self._assignment_controller: AssignmentController | None = None
         
         # Initialize controller indexes from existing courses in the term
         self._initialize_indexes_from_term()
@@ -51,16 +51,16 @@ class CourseController:
             raise ValueError("No Course selected.")
         return self._active_course
 
-    # @property
-    # def assignment_controller(self) -> AssignmentController:
-    #     """Get the Assignment controller.
+    @property
+    def assignment_controller(self) -> AssignmentController:
+        """Get the Assignment controller.
         
-    #     Raises:
-    #         ValueError: If no Course is selected.
-    #     """
-    #     if self._assignment_controller is None:
-    #         raise ValueError("No Course selected.")
-    #     return self._assignment_controller
+        Raises:
+            ValueError: If no Course is selected.
+        """
+        if self._assignment_controller is None:
+            raise ValueError("No Course selected.")
+        return self._assignment_controller
 
     def get_course_id(self, title: str) -> str:
         """Get the ID of a Course by its title.
@@ -266,4 +266,4 @@ class CourseController:
         """
         course_id = self.get_course_id(title)
         self._active_course = self._term.find_course(course_id)
-        # self._assignment_controller = AssignmentController(self._active_course)
+        self._assignment_controller = AssignmentController(self._active_course)
