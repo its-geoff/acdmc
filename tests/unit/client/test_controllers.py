@@ -1288,7 +1288,7 @@ class TestTermController:
         
         This test addresses the bug where course indexes were lost when
         reselecting a term, causing course lookup, selection, removal,
-        and ordering to fail despite courses remaining in Term._course_list.
+        and ordering to fail despite courses remaining in Term.course_list.
         """
         controller.add_term("Fall 2025", datetime(2025, 8, 15), datetime(2025, 12, 17), False)
         controller.add_term("Spring 2026", datetime(2026, 1, 2), datetime(2026, 5, 24), True)
