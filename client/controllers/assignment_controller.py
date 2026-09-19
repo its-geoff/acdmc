@@ -16,6 +16,19 @@ class AssignmentController:
         # Maps title (lowercase) -> id; only used internally
         self._title_to_id: dict[str, str] = {}
         
+        # Initialize controller indexes from existing Assignments in the term
+        self._initialize_indexes_from_term()
+        
+    def _initialize_indexes_from_term(self) -> None:
+        """Initialize controller indexes from existing Assignments in the term.
+        
+        This ensures that when a CourseController is created for a term that
+        already has Assignments, the controller's indexes are populated correctly.
+        """
+        for assignment_id, assignment in self._course.assignment_list.items():
+            self._title_to_id[assignment.title.lower()] = assignment_id
+            self._assignment_order.append(assignment_id)
+        
     def get_assignment_list(self) -> dict[str, Assignment]:
         """Get the Assignment list of the current Course.
         
@@ -23,7 +36,7 @@ class AssignmentController:
             dict[str, Assignment]: A dictionary mapping Assignment IDs to 
                 Assignment objects.
         """
-        return self._course.assignment_list()
+        return self._course.assignment_list
     
     def get_assignment_id(self, title: str) -> str:
         """Get the ID of an Assignment by its title.
@@ -79,6 +92,8 @@ class AssignmentController:
             raise RuntimeError("An unexpected error occurred when adding the course.") from e
         
         self._title_to_id[assignment.title.lower()] = assignment.id
+        # Set Course grade_percentage to None and trigger percentage recalculation
+        self._course.grade_percentage = None
         
     def edit_title(self, assignment_id: str, new_title: str) -> None:
         """Edit the title of an Assignment.
@@ -146,6 +161,8 @@ class AssignmentController:
             raise ValueError(f"Category '{new_category}' not found in grade weights.")
         
         assignment.category = new_category
+        # Set Course grade_percentage to None and trigger percentage recalculation
+        self._course.grade_percentage = None
 
     def edit_due_date(self, assignment_id: str, new_due_date: datetime) -> None:
         """Edit the due date of an Assignment.
@@ -162,7 +179,12 @@ class AssignmentController:
         assignment = self._course.find_assignment(assignment_id)
         assignment.due_date = new_due_date
 
-    def add_grade(self, title: str, *, grade=None, points_earned=None, total_points=None):
+    def add_grade(self,
+            title: str,
+            *,
+            grade: float | None = None,
+            points_earned: float | None = None,
+            total_points: float | None = None) -> None:
         """Adds a grade to a selected assignment and sets it as complete.
         
         Args:
@@ -191,6 +213,8 @@ class AssignmentController:
         grade = round(grade, 2)
         assignment.grade = grade
         assignment.completed = True
+        # Set Course grade_percentage to None and trigger percentage recalculation
+        self._course.grade_percentage = None
         
     def remove_grade(self, title: str) -> None:
         """Removes the grade from an Assignment and sets it as incomplete.
@@ -207,6 +231,8 @@ class AssignmentController:
         assignment = self._course.find_assignment(assignment_id)
         assignment.grade = 0.0
         assignment.completed = False
+        # Set Course grade_percentage to None and trigger percentage recalculation
+        self._course.grade_percentage = None
         
     def remove_assignment(self, title: str) -> None:
         """Removes an Assignment from the Course.
@@ -222,6 +248,8 @@ class AssignmentController:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         self._course.remove_assignment(assignment_id)
         del self._title_to_id[title.lower()]
+        # Set Course grade_percentage to None and trigger percentage recalculation
+        self._course.grade_percentage = None
         
     def find_assignment(self, title: str) -> Assignment:
         """Finds an Assignment by its title.
