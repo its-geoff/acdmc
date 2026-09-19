@@ -22,18 +22,8 @@ class CourseController:
         self._active_course: Course | None = None
         self._assignment_controller: AssignmentController | None = None
         
-        # Initialize controller indexes from existing courses in the term
+        # Initialize controller indexes from existing Courses in the term
         self._initialize_indexes_from_term()
-
-    def _initialize_indexes_from_term(self) -> None:
-        """Initialize controller indexes from existing courses in the term.
-        
-        This ensures that when a CourseController is created for a term that
-        already has courses, the controller's indexes are populated correctly.
-        """
-        for course_id, course in self._term.course_list.items():
-            self._title_to_id[course.title.lower()] = course_id
-            self._course_order.append(course_id)
 
     @property
     def course_order(self) -> tuple[str]:
@@ -61,6 +51,25 @@ class CourseController:
         if self._assignment_controller is None:
             raise ValueError("No Course selected.")
         return self._assignment_controller
+
+    def _initialize_indexes_from_term(self) -> None:
+        """Initialize controller indexes from existing Courses in the term.
+        
+        This ensures that when a CourseController is created for a term that
+        already has Courses, the controller's indexes are populated correctly.
+        """
+        for course_id, course in self._term.course_list.items():
+            self._title_to_id[course.title.lower()] = course_id
+            self._course_order.append(course_id)
+
+    def get_course_list(self) -> dict[str, Course]:
+        """Get the Course list of the current Term.
+        
+        Returns:
+            dict[str, Course]: A dictionary mapping Course IDs to 
+                Course objects.
+        """
+        return self._term.course_list
 
     def get_course_id(self, title: str) -> str:
         """Get the ID of a Course by its title.
@@ -234,7 +243,7 @@ class CourseController:
         
         if self._active_course is not None and self._active_course.id == course_id:
             self._active_course = None
-            # self._assignment_controller = None
+            self._assignment_controller = None
             
         self._term.remove_course(course_id)
         del self._title_to_id[title.lower()]
