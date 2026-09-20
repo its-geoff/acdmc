@@ -50,7 +50,8 @@ class TestAssignmentController:
     def test_assignment_list_getter(self, controller):
         """Test that assignment_list getter returns correct assignments."""
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
-        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", 
+            datetime(2026, 1, 22), False, 0.0)
 
         assignment_list = controller.get_assignment_list()
         assert len(assignment_list) == 2
@@ -66,7 +67,8 @@ class TestAssignmentController:
     def test_assignment_id_getter(self, controller):
         """Test that get_assignment_id returns a valid UUID."""
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
-        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", 
+            datetime(2026, 1, 22), False, 0.0)
 
         id = controller.get_assignment_id("Homework 1")
 
@@ -179,7 +181,8 @@ class TestAssignmentController:
     def test_remove_assignment(self, controller):
         """Test removing an assignment from the controller."""
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
-        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", 
+            datetime(2026, 1, 22), False, 0.0)
 
         controller.remove_assignment("Homework 1")
 
@@ -197,7 +200,8 @@ class TestAssignmentController:
     def test_find_assignment(self, controller):
         """Test finding an assignment by title."""
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
-        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", 
+            datetime(2026, 1, 22), False, 0.0)
 
         selected_assignment = controller.find_assignment("Homework 2")
         assert selected_assignment.title == "Homework 2"
@@ -216,7 +220,8 @@ class TestAssignmentController:
     def test_assignment_id_getter_not_found(self, controller):
         """Test that get_assignment_id raises KeyError when assignment not found."""
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
-        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", 
+            datetime(2026, 1, 22), False, 0.0)
 
         with pytest.raises(KeyError):
             controller.get_assignment_id("Homework 4")
@@ -227,13 +232,15 @@ class TestAssignmentController:
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
 
         with pytest.raises(ValueError):
-            controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+            controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), 
+                True, 90.0)
 
     @pytest.mark.assignment_controller_edge
     def test_add_assignment_invalid_category(self, controller):
         """Test that add_assignment raises KeyError when category is not in grade weights."""
         with pytest.raises(KeyError):
-            controller.add_assignment("Homework 1", "", "Homwork", datetime(2026, 1, 12), True, 90.0)
+            controller.add_assignment("Homework 1", "", "Homwork", datetime(2026, 1, 12), 
+                True, 90.0)
 
     @pytest.mark.assignment_controller_edge
     def test_edit_title_already_exists(self, controller):
@@ -246,7 +253,8 @@ class TestAssignmentController:
 
     @pytest.mark.assignment_controller_edge
     def test_edit_title_already_exists_different_case(self, controller):
-        """Test that edit_title raises ValueError when new title already exists (case insensitive)."""
+        """Test that edit_title raises ValueError when new title already 
+        exists (case insensitive)."""
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
         id = controller.get_assignment_id("Homework 1")
 
@@ -436,7 +444,8 @@ class TestAssignmentController:
     def test_remove_assignment_not_found(self, controller):
         """Test that remove_assignment raises KeyError when assignment not found."""
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
-        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", 
+            datetime(2026, 1, 22), False, 0.0)
 
         with pytest.raises(KeyError):
             controller.remove_assignment("Homework 4")
@@ -445,17 +454,20 @@ class TestAssignmentController:
     def test_find_assignment_not_found(self, controller):
         """Test that find_assignment raises KeyError when assignment not found."""
         controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
-        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", 
+            datetime(2026, 1, 22), False, 0.0)
 
         with pytest.raises(KeyError):
             controller.find_assignment("Homework 4")
 
     @pytest.mark.assignment_controller_smoke
     def test_initialize_indexes_from_term(self, course):
-        """Test that AssignmentController initializes indexes from existing assignments in course."""
+        """Test that AssignmentController initializes indexes from existing assignments 
+        in course."""
         # Add assignments directly to the course (simulating existing data)
         assignment1 = Assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
-        assignment2 = Assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        assignment2 = Assignment("Homework 2", "Functions and variables", "Homework", 
+            datetime(2026, 1, 22), False, 0.0)
         
         course.add_assignment(assignment1)
         course.add_assignment(assignment2)
