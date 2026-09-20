@@ -27,7 +27,7 @@ class Term:
         utils.validate_date_order(start_date, end_date)
 
         # Maps id -> Course
-        self._course_list: dict[str, Course] = {}
+        self.course_list: dict[str, Course] = {}
         self.active: bool = active
 
     def __eq__(self, other: object) -> bool:
@@ -88,7 +88,7 @@ class Term:
         """
         result = 0
 
-        for _, course in self._course_list.items():
+        for _, course in self.course_list.items():
             result += course.num_credits
 
         return result
@@ -106,7 +106,7 @@ class Term:
         if credits == 0:
             return 0.0
 
-        for _, course in self._course_list.items():
+        for _, course in self.course_list.items():
             total_gpa += course.gpa_value * course.num_credits
 
         return round(total_gpa / float(credits), 2)
@@ -131,13 +131,13 @@ class Term:
             course: The Course that will be added to course_list.
         """
         key = course.id
-        insert = key not in self._course_list
+        insert = key not in self.course_list
 
         # Throw error if course is already in the Term
         if not insert:
             raise ValueError(f"Course with ID {key} already exists in Term {self.title}.")
 
-        self._course_list[key] = course
+        self.course_list[key] = course
 
     def remove_course(self, course_id: str) -> None:
         """Removes a Course with the specified UUID.
@@ -146,7 +146,7 @@ class Term:
             course_id: The UUID of the Course to remove.
         """
         try:
-            del self._course_list[course_id]
+            del self.course_list[course_id]
         except KeyError as e:
             raise KeyError("Course not found.") from e
 
@@ -159,8 +159,8 @@ class Term:
         Returns:
             Course: The Course object matching the given UUID. Raises error if not found.
         """
-        if course_id in self._course_list:
-            return self._course_list[course_id]
+        if course_id in self.course_list:
+            return self.course_list[course_id]
         else:
             raise KeyError("Course not found.")
 

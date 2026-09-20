@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 
 # Local imports
-# from controllers.assignment_controller import AssignmentController
+from controllers.assignment_controller import AssignmentController
 from models.course import Course
 from models.term import Term
 from utils import validate_date_order
@@ -20,20 +20,10 @@ class CourseController:
         # Order of Courses by ID
         self._course_order: list[str] = []
         self._active_course: Course | None = None
-        # self._assignment_controller: AssignmentController | None = None
+        self._assignment_controller: AssignmentController | None = None
         
-        # Initialize controller indexes from existing courses in the term
+        # Initialize controller indexes from existing Courses in the term
         self._initialize_indexes_from_term()
-
-    def _initialize_indexes_from_term(self) -> None:
-        """Initialize controller indexes from existing courses in the term.
-        
-        This ensures that when a CourseController is created for a term that
-        already has courses, the controller's indexes are populated correctly.
-        """
-        for course_id, course in self._term._course_list.items():
-            self._title_to_id[course.title.lower()] = course_id
-            self._course_order.append(course_id)
 
     @property
     def course_order(self) -> tuple[str]:
@@ -51,16 +41,35 @@ class CourseController:
             raise ValueError("No Course selected.")
         return self._active_course
 
-    # @property
-    # def assignment_controller(self) -> AssignmentController:
-    #     """Get the Assignment controller.
+    @property
+    def assignment_controller(self) -> AssignmentController:
+        """Get the Assignment controller.
         
-    #     Raises:
-    #         ValueError: If no Course is selected.
-    #     """
-    #     if self._assignment_controller is None:
-    #         raise ValueError("No Course selected.")
-    #     return self._assignment_controller
+        Raises:
+            ValueError: If no Course is selected.
+        """
+        if self._assignment_controller is None:
+            raise ValueError("No Course selected.")
+        return self._assignment_controller
+
+    def _initialize_indexes_from_term(self) -> None:
+        """Initialize controller indexes from existing Courses in the term.
+        
+        This ensures that when a CourseController is created for a term that
+        already has Courses, the controller's indexes are populated correctly.
+        """
+        for course_id, course in self._term.course_list.items():
+            self._title_to_id[course.title.lower()] = course_id
+            self._course_order.append(course_id)
+
+    def get_course_list(self) -> dict[str, Course]:
+        """Get the Course list of the current Term.
+        
+        Returns:
+            dict[str, Course]: A dictionary mapping Course IDs to 
+                Course objects.
+        """
+        return self._term.course_list
 
     def get_course_id(self, title: str) -> str:
         """Get the ID of a Course by its title.
@@ -125,7 +134,7 @@ class CourseController:
             KeyError: If a Course with the given ID is not found.
             ValueError: If a Course with the same title already exists.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         old_title_lower = course.title.lower()
@@ -150,7 +159,7 @@ class CourseController:
         Raises:
             KeyError: If a Course with the given ID is not found.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         course.description = new_description
@@ -166,7 +175,7 @@ class CourseController:
             KeyError: If a Course with the given ID is not found.
             ValueError: If the new start date is after the end date.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         validate_date_order(new_start_date, course.end_date)
@@ -183,7 +192,7 @@ class CourseController:
             KeyError: If a Course with the given ID is not found.
             ValueError: If the new end date is before the start date.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         validate_date_order(course.start_date, new_end_date)
@@ -199,7 +208,7 @@ class CourseController:
         Raises:
             KeyError: If a Course with the given ID is not found.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         course.num_credits = new_num_credits
@@ -214,7 +223,7 @@ class CourseController:
         Raises:
             KeyError: If a Course with the given ID is not found.
         """
-        if course_id not in self._term._course_list:
+        if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
         course.active = new_active
@@ -234,7 +243,7 @@ class CourseController:
         
         if self._active_course is not None and self._active_course.id == course_id:
             self._active_course = None
-            # self._assignment_controller = None
+            self._assignment_controller = None
             
         self._term.remove_course(course_id)
         del self._title_to_id[title.lower()]
@@ -266,4 +275,4 @@ class CourseController:
         """
         course_id = self.get_course_id(title)
         self._active_course = self._term.find_course(course_id)
-        # self._assignment_controller = AssignmentController(self._active_course)
+        self._assignment_controller = AssignmentController(self._active_course)
