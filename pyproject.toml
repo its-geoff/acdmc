@@ -39,4 +39,6 @@ markers = [
     "term_controller_edge: Edge case tests for TermController, verifying edge cases",
     "course_controller_smoke: Smoke tests for CourseController, checking basic functionality",
     "course_controller_edge: Edge case tests for CourseController, verifying edge cases",
+    "assignment_controller_smoke: Smoke tests for AssignmentController, checking basic functionality",
+    "assignment_controller_edge: Edge case tests for AssignmentController, verifying edge cases",
 ]
