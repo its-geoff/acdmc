@@ -27,7 +27,6 @@ class AssignmentController:
         """
         for assignment_id, assignment in self._course.assignment_list.items():
             self._title_to_id[assignment.title.lower()] = assignment_id
-            self._assignment_order.append(assignment_id)
         
     def get_assignment_list(self) -> dict[str, Assignment]:
         """Get the Assignment list of the current Course.
@@ -189,13 +188,15 @@ class AssignmentController:
         
         Args:
             title: The title of the assignment to add a grade to.
-            * grade: The grade to add to the assignment.
-            * points_earned: The number of points earned for the assignment.
-            * total_points: The total number of points for the assignment.
+            grade: The grade to add to the assignment.
+            points_earned: The number of points earned for the assignment.
+            total_points: The total number of points for the assignment.
             
         Raises:
             KeyError: If an Assignment with the given title is not found.
-            ValueError: If the grade is not a valid float or is outside the range [0, 100].
+            ValueError: If grade is not a valid float or is outside the range [0, 150]. If
+                division by zero occurs. If either points_earned or total_points are not provided
+                and the grade cannot be calculated.
         """
         assignment_id = self.get_assignment_id(title)
         if assignment_id not in self._course.assignment_list:
