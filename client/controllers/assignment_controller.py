@@ -212,7 +212,7 @@ class AssignmentController:
             raise ValueError("Either grade or (points_earned, total_points) must be provided")
         
         grade = round(grade, 2)
-        assignment.grade = grade
+        assignment.grade = (grade,)
         assignment.completed = True
         # Set Course grade_percentage to None and trigger percentage recalculation
         self._course.grade_percentage = None
@@ -230,7 +230,7 @@ class AssignmentController:
         if assignment_id not in self._course.assignment_list:
             raise KeyError(f"Assignment with ID '{assignment_id}' not found.")
         assignment = self._course.find_assignment(assignment_id)
-        assignment.grade = 0.0
+        assignment.grade = (0.0,)
         assignment.completed = False
         # Set Course grade_percentage to None and trigger percentage recalculation
         self._course.grade_percentage = None

@@ -1,15 +1,472 @@
 """Tests for the TermController and CourseController classes."""
 # Standard library imports
+import math
 import re
 from datetime import datetime
 
 import pytest
+from controllers.assignment_controller import AssignmentController
 from controllers.course_controller import CourseController
 
 # Local imports
 from controllers.term_controller import TermController
+from models.assignment import Assignment
 from models.course import Course
 from models.term import Term
+
+
+class TestAssignmentController:
+    """Test suite for AssignmentController."""
+
+    @pytest.fixture
+    def course(self) -> Course:
+        """Create a sample Course for testing.
+        
+        Returns:
+            Course: A sample Course with default values.
+        """
+        return Course(
+            "ENGR 195A",
+            "",
+            datetime(2026, 1, 2),
+            datetime(2026, 5, 12),
+            3,
+            False
+        )
+
+    @pytest.fixture
+    def controller(self, course: Course) -> AssignmentController:
+        """Create an AssignmentController instance for testing.
+        
+        Args:
+            course: A sample Course instance.
+            
+        Returns:
+            AssignmentController: A fresh AssignmentController instance.
+        """
+        return AssignmentController(course)
+
+    @pytest.mark.assignment_controller_smoke
+    def test_assignment_list_getter(self, controller):
+        """Test that assignment_list getter returns correct assignments."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+
+        assignment_list = controller.get_assignment_list()
+        assert len(assignment_list) == 2
+
+        # Check if both added assignments are in the list
+        id1 = controller.get_assignment_id("Homework 1")
+        assert id1 in assignment_list
+
+        id2 = controller.get_assignment_id("Homework 2")
+        assert id2 in assignment_list
+
+    @pytest.mark.assignment_controller_smoke
+    def test_assignment_id_getter(self, controller):
+        """Test that get_assignment_id returns a valid UUID."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+
+        id = controller.get_assignment_id("Homework 1")
+
+        # Check if the ID is in the correct UUID format
+        uuid_pattern = r"""
+            ^[0-9a-fA-F]{8}
+            -[0-9a-fA-F]{4}
+            -[0-9a-fA-F]{4}
+            -[0-9a-fA-F]{4}
+            -[0-9a-fA-F]{12}$
+        """
+        assert re.match(uuid_pattern, id, re.VERBOSE)
+
+    @pytest.mark.assignment_controller_smoke
+    def test_add_assignment(self, controller):
+        """Test adding an assignment to the controller."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.title == "Homework 1"
+        assert selected_assignment.description == ""
+        assert selected_assignment.category == "Homework"
+        assert selected_assignment.due_date == datetime(2026, 1, 12)
+        assert selected_assignment.completed is True
+        assert math.isclose(selected_assignment.grade, 90.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_controller_smoke
+    def test_edit_title(self, controller):
+        """Test editing an assignment's title."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        id = controller.get_assignment_id("Homework 1")
+        controller.edit_title(id, "Homework 3")
+
+        # Check that title has been edited and title -> id mapping is correct
+        selected_assignment = controller.find_assignment("Homework 3")
+        assert selected_assignment.title == "Homework 3"
+        assert controller.get_assignment_id("Homework 3") == id
+
+    @pytest.mark.assignment_controller_smoke
+    def test_edit_description(self, controller):
+        """Test editing an assignment's description."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        id = controller.get_assignment_id("Homework 1")
+        controller.edit_description(id, "Linked lists and hash maps")
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.description == "Linked lists and hash maps"
+
+    @pytest.mark.assignment_controller_smoke
+    def test_edit_category(self, controller):
+        """Test editing an assignment's category."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        id = controller.get_assignment_id("Homework 1")
+        controller.edit_category(id, "Midterm")
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.category == "Midterm"
+
+    @pytest.mark.assignment_controller_smoke
+    def test_edit_due_date(self, controller):
+        """Test editing an assignment's due date."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        id = controller.get_assignment_id("Homework 1")
+        controller.edit_due_date(id, datetime(2026, 1, 15))
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.due_date == datetime(2026, 1, 15)
+
+    @pytest.mark.assignment_controller_smoke
+    def test_add_grade_percentage(self, controller):
+        """Test adding a grade as a percentage."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        controller.add_grade("Homework 1", grade=89.92)
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.title == "Homework 1"
+        assert math.isclose(selected_assignment.grade, 89.92, abs_tol=1e-9)
+        assert selected_assignment.completed is True
+
+    @pytest.mark.assignment_controller_smoke
+    def test_add_grade_points(self, controller):
+        """Test adding a grade as points."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        controller.add_grade("Homework 1", points_earned=18, total_points=20)
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.title == "Homework 1"
+        assert math.isclose(selected_assignment.grade, 90.0, abs_tol=1e-9)
+        assert selected_assignment.completed is True
+
+    @pytest.mark.assignment_controller_smoke
+    def test_remove_grade(self, controller):
+        """Test removing a grade from an assignment."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        controller.remove_grade("Homework 1")
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.title == "Homework 1"
+        assert math.isclose(selected_assignment.grade, 0.0, abs_tol=1e-9)
+        assert selected_assignment.completed is False
+
+    @pytest.mark.assignment_controller_smoke
+    def test_remove_assignment(self, controller):
+        """Test removing an assignment from the controller."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+
+        controller.remove_assignment("Homework 1")
+
+        assignment_list = controller.get_assignment_list()
+        assert len(assignment_list) == 1
+
+        # Raise KeyError since the assignment is not in the list
+        with pytest.raises(KeyError):
+            controller.get_assignment_id("Homework 1")
+
+        id2 = controller.get_assignment_id("Homework 2")
+        assert id2 in assignment_list
+
+    @pytest.mark.assignment_controller_smoke
+    def test_find_assignment(self, controller):
+        """Test finding an assignment by title."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+
+        selected_assignment = controller.find_assignment("Homework 2")
+        assert selected_assignment.title == "Homework 2"
+        assert selected_assignment.description == "Functions and variables"
+        assert selected_assignment.due_date == datetime(2026, 1, 22)
+        assert selected_assignment.completed is False
+        assert math.isclose(selected_assignment.grade, 0.0, abs_tol=1e-9)
+
+    @pytest.mark.assignment_controller_edge
+    def test_assignment_list_getter_empty(self, controller):
+        """Test that assignment_list getter returns empty dict when no assignments exist."""
+        assignment_list = controller.get_assignment_list()
+        assert len(assignment_list) == 0
+
+    @pytest.mark.assignment_controller_edge
+    def test_assignment_id_getter_not_found(self, controller):
+        """Test that get_assignment_id raises KeyError when assignment not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+
+        with pytest.raises(KeyError):
+            controller.get_assignment_id("Homework 4")
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_assignment_already_exists(self, controller):
+        """Test that add_assignment raises ValueError when assignment already exists."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        with pytest.raises(ValueError):
+            controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_assignment_invalid_category(self, controller):
+        """Test that add_assignment raises KeyError when category is not in grade weights."""
+        with pytest.raises(KeyError):
+            controller.add_assignment("Homework 1", "", "Homwork", datetime(2026, 1, 12), True, 90.0)
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_title_already_exists(self, controller):
+        """Test that edit_title raises ValueError when new title already exists."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        id = controller.get_assignment_id("Homework 1")
+
+        with pytest.raises(ValueError):
+            controller.edit_title(id, "Homework 1")
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_title_already_exists_different_case(self, controller):
+        """Test that edit_title raises ValueError when new title already exists (case insensitive)."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        id = controller.get_assignment_id("Homework 1")
+
+        with pytest.raises(ValueError):
+            controller.edit_title(id, "HOMEWORK 1")
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_title_not_found(self, controller):
+        """Test that edit_title raises KeyError when assignment ID not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        with pytest.raises(KeyError):
+            controller.edit_title("non-existent-id", "Homework 3")
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_description_not_found(self, controller):
+        """Test that edit_description raises KeyError when assignment ID not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        with pytest.raises(KeyError):
+            controller.edit_description("non-existent-id", "New description")
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_category_empty(self, controller):
+        """Test that edit_category raises ValueError when category is empty."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        id = controller.get_assignment_id("Homework 1")
+
+        with pytest.raises(ValueError):
+            controller.edit_category(id, "")
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_category_whitespace(self, controller):
+        """Test that edit_category raises ValueError when category is whitespace."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        id = controller.get_assignment_id("Homework 1")
+
+        with pytest.raises(ValueError):
+            controller.edit_category(id, "   ")
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_category_not_found(self, controller):
+        """Test that edit_category raises KeyError when assignment ID not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        with pytest.raises(KeyError):
+            controller.edit_category("non-existent-id", "Midterm")
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_category_invalid(self, controller):
+        """Test that edit_category raises ValueError when category is not in grade weights."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        id = controller.get_assignment_id("Homework 1")
+
+        with pytest.raises(ValueError):
+            controller.edit_category(id, "Quiz")
+
+    @pytest.mark.assignment_controller_edge
+    def test_edit_due_date_not_found(self, controller):
+        """Test that edit_due_date raises KeyError when assignment ID not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+
+        with pytest.raises(KeyError):
+            controller.edit_due_date("non-existent-id", datetime(2026, 1, 15))
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_assignment_not_found(self, controller):
+        """Test that add_grade raises KeyError when assignment not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(KeyError):
+            controller.add_grade("Homework 3", grade=89.92)
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_percentage_out_of_range_low(self, controller):
+        """Test that add_grade raises ValueError when grade is below 0."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(ValueError):
+            controller.add_grade("Homework 1", grade=-2.63)
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_percentage_out_of_range_high(self, controller):
+        """Test that add_grade raises ValueError when grade is above 150."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(ValueError):
+            controller.add_grade("Homework 1", grade=162.11)
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_percentage_boundary_low(self, controller):
+        """Test that add_grade accepts grade at lower boundary (0)."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        controller.add_grade("Homework 1", grade=0.0)
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.title == "Homework 1"
+        assert math.isclose(selected_assignment.grade, 0.0, abs_tol=1e-9)
+        assert selected_assignment.completed is True
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_percentage_boundary_high(self, controller):
+        """Test that add_grade accepts grade at upper boundary (150)."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        controller.add_grade("Homework 1", grade=150.0)
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.title == "Homework 1"
+        assert math.isclose(selected_assignment.grade, 150.0, abs_tol=1e-9)
+        assert selected_assignment.completed is True
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_points_out_of_range_low(self, controller):
+        """Test that add_grade raises ValueError when points grade is below 0."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(ValueError):
+            controller.add_grade("Homework 1", points_earned=-12, total_points=20)
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_points_out_of_range_high(self, controller):
+        """Test that add_grade raises ValueError when points grade is above 150."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(ValueError):
+            controller.add_grade("Homework 1", points_earned=40, total_points=20)
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_points_boundary_low(self, controller):
+        """Test that add_grade accepts points grade at lower boundary (0)."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        controller.add_grade("Homework 1", points_earned=0, total_points=20)
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.title == "Homework 1"
+        assert math.isclose(selected_assignment.grade, 0.0, abs_tol=1e-9)
+        assert selected_assignment.completed is True
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_points_boundary_high(self, controller):
+        """Test that add_grade accepts points grade at upper boundary (150)."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        controller.add_grade("Homework 1", points_earned=30, total_points=20)
+
+        selected_assignment = controller.find_assignment("Homework 1")
+        assert selected_assignment.title == "Homework 1"
+        assert math.isclose(selected_assignment.grade, 150.0, abs_tol=1e-9)
+        assert selected_assignment.completed is True
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_points_negative_divisor(self, controller):
+        """Test that add_grade raises ValueError when total_points is negative."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(ValueError):
+            controller.add_grade("Homework 1", points_earned=5, total_points=-20)
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_points_division_by_zero(self, controller):
+        """Test that add_grade raises ValueError when total_points is zero."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(ValueError):
+            controller.add_grade("Homework 1", points_earned=20, total_points=0)
+
+    @pytest.mark.assignment_controller_edge
+    def test_add_grade_no_parameters(self, controller):
+        """Test that add_grade raises ValueError when neither grade nor points are provided."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(ValueError):
+            controller.add_grade("Homework 1")
+
+    @pytest.mark.assignment_controller_edge
+    def test_remove_grade_assignment_not_found(self, controller):
+        """Test that remove_grade raises KeyError when assignment not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), False, 0.0)
+
+        with pytest.raises(KeyError):
+            controller.remove_grade("Homework 3")
+
+    @pytest.mark.assignment_controller_edge
+    def test_remove_assignment_not_found(self, controller):
+        """Test that remove_assignment raises KeyError when assignment not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+
+        with pytest.raises(KeyError):
+            controller.remove_assignment("Homework 4")
+
+    @pytest.mark.assignment_controller_edge
+    def test_find_assignment_not_found(self, controller):
+        """Test that find_assignment raises KeyError when assignment not found."""
+        controller.add_assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        controller.add_assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+
+        with pytest.raises(KeyError):
+            controller.find_assignment("Homework 4")
+
+    @pytest.mark.assignment_controller_smoke
+    def test_initialize_indexes_from_term(self, course):
+        """Test that AssignmentController initializes indexes from existing assignments in course."""
+        # Add assignments directly to the course (simulating existing data)
+        assignment1 = Assignment("Homework 1", "", "Homework", datetime(2026, 1, 12), True, 90.0)
+        assignment2 = Assignment("Homework 2", "Functions and variables", "Homework", datetime(2026, 1, 22), False, 0.0)
+        
+        course.add_assignment(assignment1)
+        course.add_assignment(assignment2)
+        
+        # Create controller - should initialize indexes from existing assignments
+        controller = AssignmentController(course)
+        
+        # Verify indexes are populated
+        assert len(controller.get_assignment_list()) == 2
+        assert controller.get_assignment_id("Homework 1") == assignment1.id
+        assert controller.get_assignment_id("Homework 2") == assignment2.id
 
 
 class TestCourseController:
