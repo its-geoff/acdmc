@@ -164,7 +164,150 @@ class CliView:
             text: The text to center.
         """
         self._print(text.center(99))
+
+    def _get_char_input(self, label: str, default_val: str) -> str:
+        """Ask the user for a char input, using the default value 
+        in the case of an invalid input."""
+        user_input = input(f"{label} [default: {default_val}]: ")
+
+        # Check if input is empty or only whitespace
+        if not user_input.strip() or user_input.isspace():
+            self._print("No input provided, using default value.")
+            return default_val
+
+        if len(user_input) == 1:
+            return user_input
+        
+        # Error message for multiple character input
+        self._print("Invalid input. Please enter a single character.")
+        return ""
     
+    def _get_string_input(self, label: str, default_val: str) -> str:
+        """Ask the user for a string input, using the default value 
+        in the case of an invalid input."""
+        user_input = input(f"{label} [default: {default_val}]: ")
+
+        # Check if input is empty or only whitespace
+        if not user_input.strip() or user_input.isspace():
+            self._print("No input provided, using default value.")
+            return default_val
+        
+        return user_input
+    
+    def _get_date_input(self, label: str, default_val: datetime) -> datetime:
+        """Ask the user for a date input, using the default value 
+        in the case of an invalid input."""
+        user_input = input(f"{label}: ")
+
+        # Check if input is empty or only whitespace
+        if not user_input.strip() or user_input.isspace():
+            self._print("No input provided, using default value.")
+            return default_val
+
+        try:
+            return datetime.strptime(user_input, '%Y-%m-%d')
+        except ValueError:
+            self._print("Invalid date format. Please use YYYY-MM-DD.")
+            return default_val
+
+    def _get_float_input(self, label: str, default_val: float) -> float:
+        """Ask the user for a float input, using the default value 
+        in the case of an invalid input."""
+        user_input = input(f"{label} [default: {default_val}]: ")
+
+        # Check if input is empty or only whitespace
+        if not user_input.strip() or user_input.isspace():
+            self._print("No input provided, using default value.")
+            return default_val
+
+        try:
+            return float(user_input)
+        except ValueError:
+            self._print("Invalid float input, using default value.")
+            return default_val
+
+    def _get_int_input(self, label: str, default_val: int) -> int:
+        """Ask the user for an int input, using the default value 
+        in the case of an invalid input."""
+        user_input = input(f"{label} [default: {default_val}]: ")
+
+        # Check if input is empty or only whitespace
+        if not user_input.strip() or user_input.isspace():
+            self._print("No input provided, using default value.")
+            return default_val
+
+        try:
+            return int(user_input)
+        except ValueError:
+            self._print("Invalid integer input, using default value.")
+            return default_val
+
+    def _get_bool_input(self, label: str, default_val: bool) -> bool:
+        """Ask the user for a bool input, using the default value 
+        in the case of an invalid input."""
+        default_to_string = utils.bool_to_string(default_val).lower()
+        user_input = input(f"{label} [default: {default_to_string}]: ")
+
+        # Check if input is empty or only whitespace
+        if not user_input.strip() or user_input.isspace():
+            self._print("No input provided, using default value.")
+            return default_val
+
+        # Convert string to loewrcase, then convert string to bool
+        input_lower = input.lower()
+        
+        if input_lower == "true" or input_lower == "1" or \
+                input_lower == "yes" or input_lower == "y":
+            return True
+        elif input_lower == "false" or input_lower == "0" or \
+                input_lower == "no" or input_lower == "n":
+            return False
+        else:
+            raise ValueError("Invalid boolean string.")
+
+    def _get_grade_input(self, label: str, default_val: float) -> float:
+        """Ask the user for grade input and detect the format based on the input string."""
+        user_input = input(f"{label} [default: {default_val}]: ")
+        
+        # Check if input is empty or only whitespace
+        if not user_input.strip() or user_input.isspace():
+            self._print("No input provided, using default value.")
+            return default_val
+        
+        if "/" in user_input:
+            # Slash found, use point-based version
+            return get_grade_points_input(input, default_val)
+        else:
+            # Slash not found, use percentage-based version
+            return get_grade_pct_input(input, default_val)
+    
+    def _get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
+        """Parse percentage-based grade input in float form (0.0) and output the value,
+        using the default value if the input is invalid.
+        """
+        try:
+            return round(float(user_input), 2)
+        except ValueError:
+            self._print("Invalid grade input, using default value.")
+            return defualt_val
+        
+    def _get_grade_points_input(self, input: str, default_val: float) -> float:
+        """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
+        using the default value if the input is invalid.
+        """
+        values = input.split("/")
+        if len(values) != 2:
+            self._print("Invalid grade input, using default value.")
+            return default_val
+        try:
+            points_earned = values[0]
+            total_points = values[1]
+            calculated_grade = (points_earned / total_points) * 100
+            return round(calculated_grade, 2)
+        except (ValueError, IndexError):
+            self._print("Invalid grade input, using default value.")
+            return default_val
+
     def display_delim(self) -> None:
         """Prints a delimiter line to separate different sections of information."""
         self._print("=" * 99)
@@ -318,145 +461,44 @@ class CliView:
         """Displays a message indicating an invalid selection was made."""
         self._print("Invalid selection. Please try again.")
 
-    def get_char_input(self, label: str, default_val: str) -> str:
-        """Ask the user for a char input, using the default value 
-        in the case of an invalid input."""
-        user_input = input(f"{label} [default: {default_val}]: ")
-
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
-            self._print("No input provided, using default value.")
-            return default_val
-
-        if len(user_input) == 1:
-            return user_input
+    def prompt_add_term(self) -> None:
+        """Prompt the user for information to add a Term to the list."""
+        title_empty = True
+        invalid_start_date = True
+        invalid_end_date = True
+        invalid_active = True
         
-        # Error message for multiple character input
-        self._print("Invalid input. Please enter a single character.")
-        return ""
-    
-    def get_string_input(self, label: str, default_val: str) -> str:
-        """Ask the user for a string input, using the default value 
-        in the case of an invalid input."""
-        user_input = input(f"{label} [default: {default_val}]: ")
-
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
-            self._print("No input provided, using default value.")
-            return default_val
+        self._print("Enter the following information for the term you'd like to add: ")
         
-        return user_input
-    
-    def get_date_input(self, label: str, default_val: datetime) -> datetime:
-        """Ask the user for a date input, using the default value 
-        in the case of an invalid input."""
-        user_input = input(f"{label}: ")
-
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
-            self._print("No input provided, using default value.")
-            return default_val
-
-        try:
-            return datetime.strptime(user_input, '%Y-%m-%d')
-        except ValueError:
-            self._print("Invalid date format. Please use YYYY-MM-DD.")
-            return default_val
-
-    def get_float_input(self, label: str, default_val: float) -> float:
-        """Ask the user for a float input, using the default value 
-        in the case of an invalid input."""
-        user_input = input(f"{label} [default: {default_val}]: ")
-
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
-            self._print("No input provided, using default value.")
-            return default_val
-
-        try:
-            return float(user_input)
-        except ValueError:
-            self._print("Invalid float input, using default value.")
-            return default_val
-
-    def get_int_input(self, label: str, default_val: int) -> int:
-        """Ask the user for an int input, using the default value 
-        in the case of an invalid input."""
-        user_input = input(f"{label} [default: {default_val}]: ")
-
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
-            self._print("No input provided, using default value.")
-            return default_val
-
-        try:
-            return int(user_input)
-        except ValueError:
-            self._print("Invalid integer input, using default value.")
-            return default_val
-
-    def get_bool_input(self, label: str, default_val: bool) -> bool:
-        """Ask the user for a bool input, using the default value 
-        in the case of an invalid input."""
-        default_to_string = utils.bool_to_string(default_val).lower()
-        user_input = input(f"{label} [default: {default_to_string}]: ")
-
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
-            self._print("No input provided, using default value.")
-            return default_val
-
-        # Convert string to loewrcase, then convert string to bool
-        input_lower = input.lower()
+        while title_empty:
+            title = self._get_input("Title: ")
+            if title.strip():
+                title_empty = False
+            else:
+                self._print("Title cannot be empty. Please try again.")
         
-        if input_lower == "true" or input_lower == "1" or \
-                input_lower == "yes" or input_lower == "y":
-            return True
-        elif input_lower == "false" or input_lower == "0" or \
-                input_lower == "no" or input_lower == "n":
-            return False
-        else:
-            raise ValueError("Invalid boolean string.")
-
-    def get_grade_input(self, label: str, default_val: float) -> float:
-        """Ask the user for grade input and detect the format based on the input string."""
-        user_input = input(f"{label} [default: {default_val}]: ")
+        while invalid_start_date:
+            start_date = self._get_input("Start Date (YYYY-MM-DD): ")
+            try:
+                datetime.strptime(start_date, "%Y-%m-%d")
+                invalid_start_date = False
+            except ValueError:
+                self._print("Invalid date format. Please try again.")
         
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
-            self._print("No input provided, using default value.")
-            return default_val
+        while invalid_end_date:
+            end_date = self._get_input("End Date (YYYY-MM-DD): ")
+            try:
+                datetime.strptime(end_date, "%Y-%m-%d")
+                invalid_end_date = False
+            except ValueError:
+                self._print("Invalid date format. Please try again.")
         
-        if "/" in user_input:
-            # Slash found, use point-based version
-            return get_grade_points_input(input, default_val)
-        else:
-            # Slash not found, use percentage-based version
-            return get_grade_pct_input(input, default_val)
-    
-    def get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
-        """Parse percentage-based grade input in float form (0.0) and output the value,
-        using the default value if the input is invalid.
-        """
-        try:
-            return round(float(user_input), 2)
-        except ValueError:
-            self._print("Invalid grade input, using default value.")
-            return defualt_val
+        while invalid_active:
+            active = self._get_input("Active (Y/N): ")
+            if active.upper() in ["Y", "N"]:
+                invalid_active = False
+            else:
+                self._print("Invalid input. Please try again.")
         
-    def get_grade_points_input(self, input: str, default_val: float) -> float:
-        """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
-        using the default value if the input is invalid.
-        """
-        values = input.split("/")
-        if len(values) != 2:
-            self._print("Invalid grade input, using default value.")
-            return default_val
-        try:
-            points_earned = values[0]
-            total_points = values[1]
-            calculated_grade = (points_earned / total_points) * 100
-            return round(calculated_grade, 2)
-        except (ValueError, IndexError):
-            self._print("Invalid grade input, using default value.")
-            return default_val
+        return title, start_date, end_date, active.upper() == "Y"
+        
