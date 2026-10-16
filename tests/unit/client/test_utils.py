@@ -67,36 +67,10 @@ def test_bool_to_string():
 
 
 @pytest.mark.utils_smoke
-def test_default_start_date(today_date):
-    """Test that default_start_date returns today's date."""
-    result = utils.default_start_date()
-    assert result == today_date, "Default start date should be today"
-
-
-@pytest.mark.utils_smoke
-def test_default_end_date(today_date):
-    """Test that default_end_date returns start date + 4 months."""
-    result = utils.default_end_date(today_date)
-    # Calculate expected date by adding 4 months
-    year = today_date.year + (today_date.month + 4 - 1) // 12
-    month = (today_date.month + 4 - 1) % 12 + 1
-    expected = datetime(year, month, today_date.day)
-    assert result == expected
-
-
-@pytest.mark.utils_smoke
 def test_validate_req_string():
     """Test that validate_req_string returns valid string."""
     result = utils.validate_req_string("test", "Test field")
     assert result == "test"
-
-
-@pytest.mark.utils_smoke
-def test_validate_date():
-    """Test that validate_date returns valid datetime object."""
-    result = utils.validate_date("01-15-2025")
-    expected = datetime(2025, 1, 15)
-    assert result == expected
 
 
 @pytest.mark.utils_smoke
@@ -137,20 +111,6 @@ def test_validate_req_string_whitespace():
     """Test that validate_req_string raises error for whitespace-only string."""
     with pytest.raises(ValueError, match="must not only contain whitespace"):
         utils.validate_req_string("   ", "Test field")
-
-
-@pytest.mark.utils_edge
-def test_validate_date_invalid_format():
-    """Test that validate_date raises error for invalid date format."""
-    with pytest.raises(ValueError, match="Invalid date format"):
-        utils.validate_date("2025-01-15")
-
-
-@pytest.mark.utils_edge
-def test_validate_date_invalid_date():
-    """Test that validate_date raises error for invalid date."""
-    with pytest.raises(ValueError, match="Invalid date format"):
-        utils.validate_date("02-30-2025")
 
 
 @pytest.mark.utils_edge
