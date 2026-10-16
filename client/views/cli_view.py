@@ -167,11 +167,19 @@ class CliView:
 
     def _get_char_input(self, label: str, default_val: str) -> str:
         """Ask the user for a char input, using the default value 
-        in the case of an invalid input."""
+        in the case of an invalid input.
+        
+        Args:
+            label: The label to display to the user.
+            default_val: The default value to use if the user provides no input.
+            
+        Returns:
+            The user's input or the default value.
+        """
         user_input = input(f"{label} [default: {default_val}]: ")
 
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
+        # Check if input is empty
+        if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
 
@@ -184,39 +192,63 @@ class CliView:
     
     def _get_string_input(self, label: str, default_val: str) -> str:
         """Ask the user for a string input, using the default value 
-        in the case of an invalid input."""
+        in the case of an invalid input.
+        
+        Args:
+            label: The label to display to the user.
+            default_val: The default value to use if the user provides no input.
+            
+        Returns:
+            The user's input or the default value.
+        """
         user_input = input(f"{label} [default: {default_val}]: ")
 
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
+        # Check if input is empty
+        if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
         
         return user_input
     
-    def _get_date_input(self, label: str, default_val: datetime) -> datetime:
+    def _get_date_input(self, label: str, default_val: str) -> datetime:
         """Ask the user for a date input, using the default value 
-        in the case of an invalid input."""
+        in the case of an invalid input.
+        
+        Args:
+            label: The label to display to the user.
+            default_val: The default value to use if the user provides no input.
+            
+        Returns:
+            The user's input or the default value.
+        """
         user_input = input(f"{label}: ")
 
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
+        # Check if input is empty
+        if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
 
         try:
-            return datetime.strptime(user_input, '%Y-%m-%d')
+            return datetime.strptime(user_input, '%m-%d-%Y')
         except ValueError:
-            self._print("Invalid date format. Please use YYYY-MM-DD.")
+            self._print("Invalid date format. Please use MM-DD-YYYY.")
             return default_val
 
     def _get_float_input(self, label: str, default_val: float) -> float:
         """Ask the user for a float input, using the default value 
-        in the case of an invalid input."""
+        in the case of an invalid input
+        
+        Args:
+            label: The label to display to the user.
+            default_val: The default value to use if the user provides no input.
+            
+        Returns:
+            The user's input or the default value.
+        """
         user_input = input(f"{label} [default: {default_val}]: ")
 
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
+        # Check if input is empty
+        if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
 
@@ -228,11 +260,19 @@ class CliView:
 
     def _get_int_input(self, label: str, default_val: int) -> int:
         """Ask the user for an int input, using the default value 
-        in the case of an invalid input."""
+        in the case of an invalid input.
+        
+        Args:
+            label: The label to display to the user.
+            default_val: The default value to use if the user provides no input.
+            
+        Returns:
+            The user's input or the default value.
+        """
         user_input = input(f"{label} [default: {default_val}]: ")
 
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
+        # Check if input is empty
+        if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
 
@@ -244,12 +284,20 @@ class CliView:
 
     def _get_bool_input(self, label: str, default_val: bool) -> bool:
         """Ask the user for a bool input, using the default value 
-        in the case of an invalid input."""
+        in the case of an invalid input.
+        
+        Args:
+            label: The label to display to the user.
+            default_val: The default value to use if the user provides no input.
+            
+        Returns:
+            The user's input or the default value.
+        """
         default_to_string = utils.bool_to_string(default_val).lower()
         user_input = input(f"{label} [default: {default_to_string}]: ")
 
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
+        # Check if input is empty
+        if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
 
@@ -266,11 +314,19 @@ class CliView:
             raise ValueError("Invalid boolean string.")
 
     def _get_grade_input(self, label: str, default_val: float) -> float:
-        """Ask the user for grade input and detect the format based on the input string."""
+        """Ask the user for grade input and detect the format based on the input string.
+        
+        Args:
+            label: The label to display to the user.
+            default_val: The default value to use if the user provides no input.
+            
+        Returns:
+            The user's input or the default value.
+        """
         user_input = input(f"{label} [default: {default_val}]: ")
         
-        # Check if input is empty or only whitespace
-        if not user_input.strip() or user_input.isspace():
+        # Check if input is empty
+        if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
         
@@ -284,6 +340,13 @@ class CliView:
     def _get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
         """Parse percentage-based grade input in float form (0.0) and output the value,
         using the default value if the input is invalid.
+        
+        Args:
+            user_input: The user's input.
+            defualt_val: The default value to use if the input is invalid.
+            
+        Returns:
+            The user's input or the default value.
         """
         try:
             return round(float(user_input), 2)
@@ -294,6 +357,13 @@ class CliView:
     def _get_grade_points_input(self, input: str, default_val: float) -> float:
         """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
         using the default value if the input is invalid.
+        
+        Args:
+            input: The user's input.
+            default_val: The default value to use if the input is invalid.
+            
+        Returns:
+            The user's input or the default value.
         """
         values = input.split("/")
         if len(values) != 2:
@@ -466,39 +536,53 @@ class CliView:
         title_empty = True
         invalid_start_date = True
         invalid_end_date = True
+        invalid_date_order = True
         invalid_active = True
         
         self._print("Enter the following information for the term you'd like to add: ")
         
         while title_empty:
-            title = self._get_input("Title: ")
+            title = self._get_string_input("Title", "")
+            
             if title.strip():
                 title_empty = False
             else:
                 self._print("Title cannot be empty. Please try again.")
         
         while invalid_start_date:
-            start_date = self._get_input("Start Date (YYYY-MM-DD): ")
+            start_date = self._get_date_input("Start Date (MM-DD-YYYY)", \
+                utils.default_start_date)
+
             try:
-                datetime.strptime(start_date, "%Y-%m-%d")
+                datetime.strptime(start_date, "%m-d-%Y")
                 invalid_start_date = False
             except ValueError:
                 self._print("Invalid date format. Please try again.")
         
         while invalid_end_date:
-            end_date = self._get_input("End Date (YYYY-MM-DD): ")
+            end_date = self._get_date_input("End Date (MM-DD-YYYY)", \
+                utils.default_end_date)
+            
+            
             try:
-                datetime.strptime(end_date, "%Y-%m-%d")
+                datetime.strptime(end_date, "%m-%d-%Y")
                 invalid_end_date = False
+                utils.validate_date_order(start_date, end_date)
+                invalid_date_order = False
             except ValueError:
-                self._print("Invalid date format. Please try again.")
+                if invalid_date_order:
+                    self._print("Invalid date format. Please try again.")
+                else:
+                    self._print("End date must be after start date. Please try again.")
         
         while invalid_active:
-            active = self._get_input("Active (Y/N): ")
-            if active.upper() in ["Y", "N"]:
-                invalid_active = False
-            else:
+            try:
+                active = self._get_bool_input("Current term? (yes/no)", True)
+            except ValueError:
                 self._print("Invalid input. Please try again.")
         
-        return title, start_date, end_date, active.upper() == "Y"
-        
+        try:
+            self._controller.add_term(title, start_date, end_date, active)
+            self._print(f"Term '{title}' successfully added.")
+        except ValueError:
+            self._print("A term with this title already exists. Please choose a new title.")
