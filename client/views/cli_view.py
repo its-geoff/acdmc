@@ -57,6 +57,7 @@ class EditTermResult:
         return self.start_date_updated or self.end_date_updated
 
 
+@dataclass
 class EditCourseResult:
     """A class that shows the state of Course field updates for edit_course."""
     title_requested: bool = False
@@ -100,6 +101,7 @@ class EditCourseResult:
         return self.start_date_updated or self.end_date_updated
 
 
+@dataclass
 class EditAssignmentResult:
     title_requested: bool = False
     title_updated: bool = False
@@ -233,3 +235,85 @@ class CliView:
         else:
             self._print("[A] Add assignment")
             self._print("[X] Exit to course menu")
+
+    def display_view_assignment_menu(self) -> None:
+        """Prints a menu of choices for the user to view a group of Assignments."""
+        self.display_delim()
+        self._print_centered("View Assignment Menu")
+        self._print_centered("What group of assignments would you like to view?")
+        self._print("[A] All assignments")
+        self._print("[C] Completed assignments")
+        self._print("[I] Incomplete assignments")
+        self._print("[X] Exit to assignment menu")
+    
+    def display_term_list_info(self) -> None:
+        """Displays information about all terms from TermController."""
+        terms = self._controller.term_list
+        
+        for term in terms.values():
+            self.display_secondary_delim()
+            term.print_term_info(self._out_stream)
+            self.display_secondary_delim()
+
+    def display_course_list_info(self) -> None:
+        """Displays information about all courses from the selected Term."""
+        courses = self._selected_term.course_list
+        
+        for course in courses.values():
+            self.display_secondary_delim()
+            course.print_course_info(self._out_stream)
+            self.display_secondary_delim()
+            
+    def display_assignment_list_info(self) -> None:
+        """Displays information about all assignments from the selected Course."""
+        assignments = self._selected_course._assignment_list
+        
+        # Return early if there are no assignments
+        if not assignments:
+            self.display_secondary_delim()
+            self._print("No assignments to display.")
+            self.display_secondary_delim()
+            return
+        
+        for assignment in assignments.values():
+            self.display_secondary_delim()
+            assignment.print_assignment_info(self._out_stream)
+            self.display_secondary_delim()
+            
+    def display_completed_assignment_info(self) -> None:
+        """Displays information about completed assignments from the selected Course."""
+        assignments = self._selected_course._assignment_list
+        completed_assignments = False
+        
+        for assignment in assignments.values():
+            if assignment.completed:
+                self.display_secondary_delim()
+                assignment.print_assignment_info(self._out_stream)
+                self.display_secondary_delim()
+                completed_assignments = True
+        
+        if not completed_assignments:
+            self.display_secondary_delim()
+            self._print("No completed assignments to display.")
+            self.display_secondary_delim()
+            
+    def display_incomplete_assignment_info(self) -> None:
+        """Displays information about incomplete assignments from the selected Course."""
+        assignments = self._selected_course._assignment_list
+        incomplete_assignments = False
+        
+        for assignment in assignments.values():
+            if not assignment.completed:
+                self.display_secondary_delim()
+                assignment.print_assignment_info(self._out_stream)
+                self.display_secondary_delim()
+                incomplete_assignments = True
+        
+        if not incomplete_assignments:
+            self.display_secondary_delim()
+            self._print("No incomplete assignments to display.")
+            self.display_secondary_delim()
+            
+    def display_invalid_selection(self) -> None:
+        """Displays a message indicating an invalid selection was made."""
+        self._print("Invalid selection. Please try again.")
