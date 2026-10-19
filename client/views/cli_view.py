@@ -586,3 +586,105 @@ class CliView:
             self._print(f"Term '{title}' successfully added.")
         except ValueError:
             self._print("A term with this title already exists. Please choose a new title.")
+
+    def prompt_edit_term(self) -> None:
+        """Prompt the user for information to edit a Term in the current list."""
+        result_flags = EditTermResult()
+        edit_fields = []
+        
+        self._print("Enter the following information for the term you'd like to edit:")
+        title = self._get_string_input("Title", "")
+        
+        try:
+            selected_term = self._controller.find_term(title)
+        except ValueError:
+            self._print("Term not found. Operation cancelled.")
+            return
+        term_id = selected_term.id
+        
+        # Get fields that need to be updated and normalize input
+        self._print("Fields available: title, start date, end date, active")
+        to_update = self._get_string_input("Fields to update (comma-separated)", "")
+        edit_fields = [f.strip() for f in to_update.split(",")]
+        
+        for field in edit_fields:
+            match field:
+                case "title":
+                    result_flags.title_requested = True
+                    
+                    try:
+                        new_title = self._get_string_input("New title", "")
+                        utils.validate_req_string(new_title, "Title")
+                        self._controller.edit_title(term_id, new_title)
+                        result_flags.title_updated = True
+                    except ValueError:
+                        if not new_title or new_title.isspace():
+                            self._print("Empty title not allowed. Cannot update title.")
+                        else:
+                            self._print("A term with this title already exists. "
+                                "Cannot update title.")
+                case "start date" | "startdate":
+                    result_flags.start_date_requested = True
+                    
+                    try:
+                        new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", "")
+                        # Check date order if only start date is being edited
+                        if "end date" not in edit_fields:
+                            utils.validate_date_order(new_start_date, selected_term.end_date)
+                        # Only update if start date is different
+                        if new_start_date != selected_term.start_date:
+                            self._controller.edit_start_date(term_id, new_start_date)
+                            result_flags.start_date_updated = True
+                    except ValueError:
+                        self._print("Invalid date value. Cannot update start date.")
+                case "end date" | "enddate":
+                    result_flags.end_date_requested = True
+                    
+                    try:
+                        new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", "")
+                        # Check date order
+                        utils.validate_date_order(selected_term.start_date, new_end_date)
+                        # Only update if end date is different
+                        if new_end_date != selected_term.end_date:
+                            self._controller.edit_end_date(term_id, new_end_date)
+                            result_flags.end_date_updated = True
+                    except ValueError:
+                        self._print("Invalid date value. Cannot update end date.")
+                case "active":
+                    result_flags.active_requested = True
+                    
+                    try:
+                        new_active = self._get_bool_input("Is this a current term? (yes/no)", True)
+                        # Only update if active flag is different
+                        if new_active != selected_term.is_active:
+                            self._controller.edit_active(term_id, new_active)
+                            result_flags.active_updated = True
+                    except ValueError:
+                        self._print("Invalid boolean value. Cannot update active flag.")
+                case _:
+                    self._print(f"Unknown field: {field}. Skipping.")
+        
+        # Update result output
+        if result_flags.any_requested():
+            self._print("Update results:")
+            
+            if result_flags.title_requested:
+                if result_flags.title_updated:
+                    self._print(f"Title: {selected_term.title}")
+                else:
+                    self._print("Title: (unchanged)")
+                    
+            if result_flags.dates_requested():
+                if result_flags.dates_updated():
+                    self._print(f"Duration: {selected_term.start_date} - {selected_term.end_date}")
+                else:
+                    self._print("Duration: (unchanged)")
+                    
+            if result_flags.active_requested:
+                if result_flags.active_updated:
+                    self._print(f"Current? {utils.bool_to_string(selected_term.active)}")
+                else:
+                    self._print("Current? (unchanged)")
+
+        # Reset selected_term to allow the selection of a new one
+        selected_term.reset()
