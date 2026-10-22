@@ -796,7 +796,7 @@ class CliView:
 
         try:
             course_controller = self._controller.get_course_controller()
-            course_controller.add_course(title, description, start_date, end_date, \
+            course_controller.add_course(title, description, start_date, end_date,
                 num_credits, active)
             self._print(f"Course '{title}' successfully added.")
         except ValueError:
@@ -844,7 +844,7 @@ class CliView:
                     
                     try:
                         new_description = self._get_string_input("New description", "")
-                        self._controller.edit_description(course_id, new_description)
+                        course_controller.edit_description(course_id, new_description)
 
                         # Only set description_updated if old and new descriptions are different
                         if new_description != self._selected_course.description:
@@ -994,3 +994,227 @@ class CliView:
                 self._print("Course not found. No Course was removed.")
         else:
             self._print(f"Operation cancelled. Course '{title}' was not removed.")
+
+    def prompt_add_assignment(self) -> None:
+        """Prompt the user for information to add an Assignment into the list."""
+        title_empty = True
+        invalid_category = True
+        invalid_due_date = True
+        invalid_completed = True
+        invalid_grade = True
+
+        self._print("Enter the following information for the assignment you want to add:")
+
+        while title_empty:
+            title = self._get_string_input("Title", "")
+
+            if title:
+                title_empty = False
+            else:
+                self._print("Title cannot be empty. Please try again.")
+
+        description = self._get_string_input("Description", "")
+        # Set description to empty string if it only contains whitespace
+        if description.isspace():
+            description = ""
+
+        while invalid_category:
+            try:
+                category = self._get_string_input("Category", "")
+                utils.validate_req_string(category, "Category")
+                category = category.strip()
+
+                if category not in self._selected_course.grade_weights:
+                    raise KeyError("Category must be in grade weights.")
+
+                invalid_category = False
+            except KeyError:
+                self._print("Category must be in grade weights. Please try again.")
+            except ValueError:
+                self._print("Invalid category. Category cannot be empty. Please try again.")
+        
+        while invalid_due_date:
+            try:
+                due_date = self._get_date_input("Due Date (MM/DD/YYYY)", "")
+
+                # Check if date is empty (default); if not, validate input
+                if due_date:
+                    utils.validate_date(due_date, "Due Date")
+                else:
+                    self._print("Due date is empty. Using default date.")
+                invalid_due_date = False
+            except ValueError:
+                self._print("Invalid due date. Please enter a valid date.")
+                continue
+
+        while invalid_completed:
+            try:
+                completed = self._get_bool_input("Completed assignment? (yes/no)", False)
+                invalid_completed = False
+            except ValueError:
+                self._print("Invalid input. Please try again.")
+                continue
+        
+        # Only set grade if completed is True; otherwise, use default
+        if completed:
+            while invalid_grade:
+                grade = self._get_grade_input("Grade", 0.0)
+
+                if grade > 150.0 or grade < 0.0:
+                    self._print("Invalid grade. Grade must be from 0 to 150. Please try again.")
+                else:
+                    invalid_grade = False
+        else:
+            grade = 0.0
+
+        try:
+            assignment_controller = (
+                self
+                ._controller
+                .get_course_controller()
+                .get_assignment_controller()
+            )
+            assignment_controller.add_assignment(title, description, category, due_date,
+                completed, grade)
+            self._print(f"Assignment '{title}' successfully added.")
+        except Exception:
+            self._print("An Assignment with this title already exists. Please choose a new title.")
+
+    def prompt_edit_assignment(self) -> None:
+        """Prompt the user for information to edit an Assignment in the current list."""
+        result_flags = EditAssignmentResult()
+        assignment_controller = (
+            self
+            ._controller
+            .get_course_controller()
+            .get_assignment_controller()
+        )
+
+        self._print("Enter the following information for the Assignment you want to edit:")
+        title = self._get_string_input("Title", "")
+
+        try:
+            self._selected_assignment = assignment_controller.get_assignment_by_title(title)
+        except Exception:
+            self._print("Assignment not found. Operation cancelled.")
+            return
+        assignment_id = self._selected_assignment.assignment_id
+
+        # Get fields that need to be updated and normalize input
+        self._print("Fields available: title, description, category, due date")
+        to_update = self._get_string_input("Fields to update (comma-separated)", "").lower()
+        edit_fields = [field.strip() for field in to_update.split(",")]
+        
+        # Get updated info and perform update
+        for field in edit_fields:
+            match field:
+                case "title":
+                    result_flags.title_requested = True
+
+                    try:
+                        new_title = self._get_string_input("New title", "")
+                        utils.validate_req_string(new_title, "Title")
+                        assignment_controller.edit_title(assignment_id, new_title)
+                        result_flags.title_updated = True
+                    except ValueError:
+                        if not new_title or new_title.isspace():
+                            self._print("Empty title not allowed. Cannot update title.")
+                        else:
+                            self._print("A course with this title already exists. "
+                                "Cannot update title.")
+                case "description":
+                    result_flags.description_requested = True
+                    
+                    old_description = self._selected_assignment.description
+                    new_description = self._get_string_input("New description", "")
+                    assignment_controller.edit_description(assignment_id, new_description)
+
+                    # Only set description_updated if old and new descriptions are different
+                    if old_description != new_description:
+                        result_flags.description_updated = True
+                case "category":
+                    result_flags.category_requested = True
+
+                    try:
+                        new_category = self._get_string_input("New category", "")
+
+                        # Only update if category is different
+                        if new_category != self._selected_assignment.category:
+                            assignment_controller.edit_category(assignment_id, new_category)
+                            result_flags.category_updated = True
+                    except ValueError:
+                        self._print("Invalid category. Category must be in grade weights. "
+                            "Cannot update category.")
+                case "due_date" | "duedate":
+                    result_flags.due_date_requested = True
+
+                    try:
+                        new_due_date = self._get_date_input("New due date (MM-DD-YYYY)", "")
+                        
+                        # Only update if due date is different
+                        if new_due_date != self._selected_assignment.due_date:
+                            assignment_controller.edit_due_date(assignment_id, new_due_date)
+                            result_flags.due_date_updated = True
+                    except ValueError:
+                        self._print("Invalid date value. Cannot update due date.")
+
+        if result_flags.any_requested():
+            self._print("Update results:")
+
+            if result_flags.title_requested:
+                if result_flags.title_updated:
+                    self._print(f"Title: {self._selected_assignment.title}")
+                else:
+                    self._print("Title: (unchanged)")
+            
+            if result_flags.description_requested:
+                if result_flags.description_updated:
+                    self._print(f"Description: {self._selected_assignment.description}")
+                else:
+                    self._print("Description: (unchanged)")
+            
+            if result_flags.category_requested:
+                if result_flags.category_updated:
+                    self._print(f"Category: {self._selected_assignment.category}")
+                else:
+                    self._print("Category: (unchanged)")
+            
+            if result_flags.due_date_requested:
+                if result_flags.due_date_updated:
+                    self._print(f"Due Date: {self._selected_assignment.due_date}")
+                else:
+                    self._print("Due Date: (unchanged)")
+
+            # Reset selected_assignment to allow the selection of a new one
+            self._selected_assignment = None
+
+    def prompt_remove_assignment(self) -> None:
+        """Prompt the user for the title to remove an Assignment from the list."""
+        invalid_bool = True
+        assignment_controller = (
+            self
+            ._controller.get_course_controller()
+            .get_assignment_controller()
+        )
+
+        self._print("Enter the following information for the assignment you want to remove:")
+        title = self._get_string_input("Title", "")
+        
+        # Confirmation before removal
+        confirm = False
+        while invalid_bool:
+            try:
+                confirm = self._get_bool_input("Are you sure you want to remove "
+                    "this assignment? (yes/no): ", False)
+                invalid_bool = False
+            except ValueError:
+                self._print("Invalid input. Please enter 'yes' or 'no'.")
+
+        if confirm:
+            try:
+                assignment_controller.remove_assignment(title)
+                self._print(f"Assignment '{title}' was removed.")
+            except ValueError:
+                self._print("Assignment not found. Operation cancelled.")
+        else:
+            self._print(f"Operation cancelled. Assignment '{title}' was not removed.")
