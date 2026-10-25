@@ -179,6 +179,9 @@ class CliView:
 
         Returns:
             The line read, without the trailing newline.
+
+        Raises:
+            EOFError: If the input stream is closed.
         """
         self._out_stream.write(prompt)
         self._out_stream.flush()
@@ -232,7 +235,7 @@ class CliView:
         
         return user_input
     
-    def _get_date_input(self, label: str, default_val: str) -> datetime:
+    def _get_date_input(self, label: str, default_val: datetime) -> datetime:
         """Ask the user for a date input, using the default value 
         in the case of an invalid input.
         
@@ -636,7 +639,8 @@ class CliView:
                 result_flags.start_date_requested = True
                 
                 try:
-                    new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", "")
+                    new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", \
+                        self._selected_term.start_date)
                     # Check date order if only start date is being edited
                     if "end date" not in edit_fields:
                         utils.validate_date_order(new_start_date, self._selected_term.end_date)
@@ -650,7 +654,8 @@ class CliView:
                 result_flags.end_date_requested = True
                 
                 try:
-                    new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", "")
+                    new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", \
+                        self._selected_term.end_date)
                     # Check date order
                     utils.validate_date_order(self._selected_term.start_date, new_end_date)
                     # Only update if end date is different
@@ -857,7 +862,8 @@ class CliView:
                 result_flags.start_date_requested = True
                 
                 try:
-                    new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", "")
+                    new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", \
+                        self._selected_course.start_date)
                     # Check date order if only start date is being edited
                     if "end date" not in edit_fields:
                         utils.validate_date_order(new_start_date, 
@@ -872,7 +878,8 @@ class CliView:
                 result_flags.end_date_requested = True
                 
                 try:
-                    new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", "")
+                    new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", \
+                        self._selected_course.end_date)
                     # Check date order
                     utils.validate_date_order(self._selected_course.start_date, new_end_date)
                     # Only update if end date is different
@@ -1035,7 +1042,8 @@ class CliView:
         
         while invalid_due_date:
             try:
-                due_date = self._get_date_input("Due Date (MM/DD/YYYY)", "")
+                due_date = self._get_date_input("Due Date (MM/DD/YYYY)", \
+                    utils.default_start_date())
 
                 if not due_date:
                     self._print("Due date is empty. Using default date.")
@@ -1143,7 +1151,8 @@ class CliView:
                 result_flags.due_date_requested = True
 
                 try:
-                    new_due_date = self._get_date_input("New due date (MM-DD-YYYY)", "")
+                    new_due_date = self._get_date_input("New due date (MM-DD-YYYY)", \
+                        self._selected_assignment.due_date)
                     
                     # Only update if due date is different
                     if new_due_date != self._selected_assignment.due_date:
