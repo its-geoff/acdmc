@@ -4,8 +4,25 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 
-default_start_date = datetime.now().date()
-default_end_date = datetime.now() + relativedelta(months=4)
+def default_start_date() -> datetime:
+    """Return today's date at midnight.
+
+    Returns:
+        Today at 00:00 as a datetime.
+    """
+    return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def default_end_date(start_date: datetime) -> datetime:
+    """Return the default end date, four months after the start date.
+
+    Args:
+        start_date: The start date.
+
+    Returns:
+        The start date plus four months.
+    """
+    return start_date + relativedelta(months=4)
 
 def generate_uuid() -> str:
     """Generates a unique ID across all objects and classes.
