@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-import TextIO
+from typing import TextIO
 import utils
 
 # Local imports
