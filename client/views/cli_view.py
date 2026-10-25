@@ -103,6 +103,7 @@ class EditCourseResult:
 
 @dataclass
 class EditAssignmentResult:
+    """A class that shows the state of Assignment field updates for edit_assignment."""
     title_requested: bool = False
     title_updated: bool = False
 
@@ -125,6 +126,14 @@ class EditAssignmentResult:
             or self.due_date_requested
 
 
+class MenuState(Enum):
+    """An enum that represents the current menu state of the CLI."""
+    TERM = 0
+    COURSE = 1
+    ASSIGNMENT = 2
+    EXIT = 3
+
+
 class CliView:
     """Class that handles I/O and user interaction for the command line interface."""
 
@@ -141,12 +150,6 @@ class CliView:
         self._in_stream: TextIO = in_stream
         # Defines output stream
         self._out_stream: TextIO = out_stream
-
-        class MenuState(Enum):
-            TERM = 0
-            COURSE = 1
-            ASSIGNMENT = 2
-            EXIT = 3
 
     def _print(self, *args, **kwargs) -> None:
         """Prints to the output stream.
@@ -607,61 +610,60 @@ class CliView:
         edit_fields = [f.strip() for f in to_update.split(",")]
         
         for field in edit_fields:
-            match field:
-                case "title":
-                    result_flags.title_requested = True
-                    
-                    try:
-                        new_title = self._get_string_input("New title", "")
-                        utils.validate_req_string(new_title, "Title")
-                        self._controller.edit_title(term_id, new_title)
-                        result_flags.title_updated = True
-                    except ValueError:
-                        if not new_title or new_title.isspace():
-                            self._print("Empty title not allowed. Cannot update title.")
-                        else:
-                            self._print("A term with this title already exists. "
-                                "Cannot update title.")
-                case "start date" | "startdate":
-                    result_flags.start_date_requested = True
-                    
-                    try:
-                        new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", "")
-                        # Check date order if only start date is being edited
-                        if "end date" not in edit_fields:
-                            utils.validate_date_order(new_start_date, self._selected_term.end_date)
-                        # Only update if start date is different
-                        if new_start_date != self._selected_term.start_date:
-                            self._controller.edit_start_date(term_id, new_start_date)
-                            result_flags.start_date_updated = True
-                    except ValueError:
-                        self._print("Invalid date value. Cannot update start date.")
-                case "end date" | "enddate":
-                    result_flags.end_date_requested = True
-                    
-                    try:
-                        new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", "")
-                        # Check date order
-                        utils.validate_date_order(self._selected_term.start_date, new_end_date)
-                        # Only update if end date is different
-                        if new_end_date != self._selected_term.end_date:
-                            self._controller.edit_end_date(term_id, new_end_date)
-                            result_flags.end_date_updated = True
-                    except ValueError:
-                        self._print("Invalid date value. Cannot update end date.")
-                case "active":
-                    result_flags.active_requested = True
-                    
-                    try:
-                        new_active = self._get_bool_input("Is this a current term? (yes/no)", True)
-                        # Only update if active flag is different
-                        if new_active != self._selected_term.is_active:
-                            self._controller.edit_active(term_id, new_active)
-                            result_flags.active_updated = True
-                    except ValueError:
-                        self._print("Invalid boolean value. Cannot update active flag.")
-                case _:
-                    self._print(f"Unknown field: {field}. Skipping.")
+            if field == "title":
+                result_flags.title_requested = True
+                
+                try:
+                    new_title = self._get_string_input("New title", "")
+                    utils.validate_req_string(new_title, "Title")
+                    self._controller.edit_title(term_id, new_title)
+                    result_flags.title_updated = True
+                except ValueError:
+                    if not new_title or new_title.isspace():
+                        self._print("Empty title not allowed. Cannot update title.")
+                    else:
+                        self._print("A term with this title already exists. "
+                            "Cannot update title.")
+            elif field == "start date" or field == "startdate":
+                result_flags.start_date_requested = True
+                
+                try:
+                    new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", "")
+                    # Check date order if only start date is being edited
+                    if "end date" not in edit_fields:
+                        utils.validate_date_order(new_start_date, self._selected_term.end_date)
+                    # Only update if start date is different
+                    if new_start_date != self._selected_term.start_date:
+                        self._controller.edit_start_date(term_id, new_start_date)
+                        result_flags.start_date_updated = True
+                except ValueError:
+                    self._print("Invalid date value. Cannot update start date.")
+            elif field == "end date" or field == "enddate":
+                result_flags.end_date_requested = True
+                
+                try:
+                    new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", "")
+                    # Check date order
+                    utils.validate_date_order(self._selected_term.start_date, new_end_date)
+                    # Only update if end date is different
+                    if new_end_date != self._selected_term.end_date:
+                        self._controller.edit_end_date(term_id, new_end_date)
+                        result_flags.end_date_updated = True
+                except ValueError:
+                    self._print("Invalid date value. Cannot update end date.")
+            elif field == "active":
+                result_flags.active_requested = True
+                
+                try:
+                    new_active = self._get_bool_input("Is this a current term? (yes/no)", True)
+                    # Only update if active flag is different
+                    if new_active != self._selected_term.is_active:
+                        self._controller.edit_active(term_id, new_active)
+                        result_flags.active_updated = True
+                except ValueError:
+                    self._print("Invalid boolean value. Cannot update active flag.")
+            else:
+                self._print(f"Unknown field: {field}. Skipping.")
         
         # Update result output
         if result_flags.any_requested():
@@ -824,93 +826,93 @@ class CliView:
         edit_fields = [f.strip() for f in to_update.split(",")]
 
         for field in edit_fields:
-            match field:
-                case "title":
-                    result_flags.title_requested = True
-                    
-                    try:
-                        new_title = self._get_string_input("New title", "")
-                        utils.validate_req_string(new_title, "Title")
-                        self._controller.edit_title(course_id, new_title)
-                        result_flags.title_updated = True
-                    except ValueError:
-                        if not new_title or new_title.isspace():
-                            self._print("Empty title not allowed. Cannot update title.")
-                        else:
-                            self._print("A course with this title already exists. "
-                                "Cannot update title.")
-                case "description":
-                    result_flags.description_requested = True
-                    
-                    try:
-                        new_description = self._get_string_input("New description", "")
-                        course_controller.edit_description(course_id, new_description)
+            if field == "title":
+                result_flags.title_requested = True
+                
+                try:
+                    new_title = self._get_string_input("New title", "")
+                    utils.validate_req_string(new_title, "Title")
+                    self._controller.edit_title(course_id, new_title)
+                    result_flags.title_updated = True
+                except ValueError:
+                    if not new_title or new_title.isspace():
+                        self._print("Empty title not allowed. Cannot update title.")
+                    else:
+                        self._print("A course with this title already exists. "
+                            "Cannot update title.")
+            elif field == "description":
+                result_flags.description_requested = True
+                
+                try:
+                    new_description = self._get_string_input("New description", "")
+                    course_controller.edit_description(course_id, new_description)
 
-                        # Only set description_updated if old and new descriptions are different
-                        if new_description != self._selected_course.description:
-                            result_flags.description_updated = True
-                    except ValueError:
-                        if not new_description or new_description.isspace():
-                            self._print("Empty description not allowed. "
-                                "Cannot update description.")
-                case "start date" | "startdate":
-                    result_flags.start_date_requested = True
-                    
-                    try:
-                        new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", "")
-                        # Check date order if only start date is being edited
-                        if "end date" not in edit_fields:
-                            utils.validate_date_order(new_start_date, 
-                                self._selected_course.end_date)
-                        # Only update if start date is different
-                        if new_start_date != self._selected_course.start_date:
-                            self._controller.edit_start_date(course_id, new_start_date)
-                            result_flags.start_date_updated = True
-                    except ValueError:
-                        self._print("Invalid date value. Cannot update start date.")
-                case "end date" | "enddate":
-                    result_flags.end_date_requested = True
-                    
-                    try:
-                        new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", "")
-                        # Check date order
-                        utils.validate_date_order(self._selected_course.start_date, new_end_date)
-                        # Only update if end date is different
-                        if new_end_date != self._selected_course.end_date:
-                            self._controller.edit_end_date(course_id, new_end_date)
-                            result_flags.end_date_updated = True
-                    except ValueError:
-                        self._print("Invalid date value. Cannot update end date.")
-                case "number of credits" | "numberofcredits" | "numcredits":
-                    result_flags.num_credits_requested = True
-                    
-                    try:
-                        new_num_credits = self._get_int_input("New number of credits", 3)
-                        if new_num_credits < 0:
-                            self._print("Invalid number of credits. Number of credits must be "
-                                "greater than or equal to 0. Cannot update number of credits.")
-                        else:
-                            # Only update if number of credits is different
-                            if new_num_credits != self._selected_course.num_credits:
-                                self._controller.edit_num_credits(course_id, new_num_credits)
-                                result_flags.num_credits_updated = True
-                    except ValueError:
-                        self._print("Number of credits must be a valid integer. Cannot update "
-                            "number of credits.")
-                case "active":
-                    result_flags.active_requested = True
-                    
-                    try:
-                        new_active = self._get_bool_input("Is this a current course? (yes/no)",
-                            True)
-                        # Only update if active flag is different
-                        if new_active != self._selected_course.active:
-                            self._controller.edit_active(course_id, new_active)
-                            result_flags.active_updated = True
-                    except ValueError:
-                        self._print("Invalid boolean value. Cannot update active flag.")
-                case _:
-                    self._print(f"Unknown field '{field}'. Skipping.")
+                    # Only set description_updated if old and new descriptions are different
+                    if new_description != self._selected_course.description:
+                        result_flags.description_updated = True
+                except ValueError:
+                    if not new_description or new_description.isspace():
+                        self._print("Empty description not allowed. "
+                            "Cannot update description.")
+            elif field == "start date" or field == "startdate":
+                result_flags.start_date_requested = True
+                
+                try:
+                    new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", "")
+                    # Check date order if only start date is being edited
+                    if "end date" not in edit_fields:
+                        utils.validate_date_order(new_start_date, 
+                            self._selected_course.end_date)
+                    # Only update if start date is different
+                    if new_start_date != self._selected_course.start_date:
+                        self._controller.edit_start_date(course_id, new_start_date)
+                        result_flags.start_date_updated = True
+                except ValueError:
+                    self._print("Invalid date value. Cannot update start date.")
+            elif field == "end date" or field == "enddate":
+                result_flags.end_date_requested = True
+                
+                try:
+                    new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", "")
+                    # Check date order
+                    utils.validate_date_order(self._selected_course.start_date, new_end_date)
+                    # Only update if end date is different
+                    if new_end_date != self._selected_course.end_date:
+                        self._controller.edit_end_date(course_id, new_end_date)
+                        result_flags.end_date_updated = True
+                except ValueError:
+                    self._print("Invalid date value. Cannot update end date.")
+            elif field == "number of credits" or field == "numberofcredits" \
+                    or field == "numcredits":
+                result_flags.num_credits_requested = True
+                
+                try:
+                    new_num_credits = self._get_int_input("New number of credits", 3)
+                    if new_num_credits < 0:
+                        self._print("Invalid number of credits. Number of credits must be "
+                            "greater than or equal to 0. Cannot update number of credits.")
+                    else:
+                        # Only update if number of credits is different
+                        if new_num_credits != self._selected_course.num_credits:
+                            self._controller.edit_num_credits(course_id, new_num_credits)
+                            result_flags.num_credits_updated = True
+                except ValueError:
+                    self._print("Number of credits must be a valid integer. Cannot update "
+                        "number of credits.")
+            elif field == "active":
+                result_flags.active_requested = True
+                
+                try:
+                    new_active = self._get_bool_input("Is this a current course? (yes/no)",
+                        True)
+                    # Only update if active flag is different
+                    if new_active != self._selected_course.active:
+                        self._controller.edit_active(course_id, new_active)
+                        result_flags.active_updated = True
+                except ValueError:
+                    self._print("Invalid boolean value. Cannot update active flag.")
+            else:
+                self._print(f"Unknown field '{field}'. Skipping.")
 
         # Update result output
         if result_flags.any_requested():
@@ -1107,56 +1109,57 @@ class CliView:
         
         # Get updated info and perform update
         for field in edit_fields:
-            match field:
-                case "title":
-                    result_flags.title_requested = True
+            if field == "title":
+                result_flags.title_requested = True
 
-                    try:
-                        new_title = self._get_string_input("New title", "")
-                        utils.validate_req_string(new_title, "Title")
-                        assignment_controller.edit_title(assignment_id, new_title)
-                        result_flags.title_updated = True
-                    except ValueError:
-                        if not new_title or new_title.isspace():
-                            self._print("Empty title not allowed. Cannot update title.")
-                        else:
-                            self._print("A course with this title already exists. "
-                                "Cannot update title.")
-                case "description":
-                    result_flags.description_requested = True
+                try:
+                    new_title = self._get_string_input("New title", "")
+                    utils.validate_req_string(new_title, "Title")
+                    assignment_controller.edit_title(assignment_id, new_title)
+                    result_flags.title_updated = True
+                except ValueError:
+                    if not new_title or new_title.isspace():
+                        self._print("Empty title not allowed. Cannot update title.")
+                    else:
+                        self._print("A course with this title already exists. "
+                            "Cannot update title.")
+            elif field == "description":
+                result_flags.description_requested = True
+                
+                old_description = self._selected_assignment.description
+                new_description = self._get_string_input("New description", "")
+                assignment_controller.edit_description(assignment_id, new_description)
+
+                # Only set description_updated if old and new descriptions are different
+                if old_description != new_description:
+                    result_flags.description_updated = True
+            elif field == "category":
+                result_flags.category_requested = True
+
+                try:
+                    new_category = self._get_string_input("New category", "")
+
+                    # Only update if category is different
+                    if new_category != self._selected_assignment.category:
+                        assignment_controller.edit_category(assignment_id, new_category)
+                        result_flags.category_updated = True
+                except ValueError:
+                    self._print("Invalid category. Category must be in grade weights. "
+                        "Cannot update category.")
+            elif field == "due_date" or field == "duedate":
+                result_flags.due_date_requested = True
+
+                try:
+                    new_due_date = self._get_date_input("New due date (MM-DD-YYYY)", "")
                     
-                    old_description = self._selected_assignment.description
-                    new_description = self._get_string_input("New description", "")
-                    assignment_controller.edit_description(assignment_id, new_description)
-
-                    # Only set description_updated if old and new descriptions are different
-                    if old_description != new_description:
-                        result_flags.description_updated = True
-                case "category":
-                    result_flags.category_requested = True
-
-                    try:
-                        new_category = self._get_string_input("New category", "")
-
-                        # Only update if category is different
-                        if new_category != self._selected_assignment.category:
-                            assignment_controller.edit_category(assignment_id, new_category)
-                            result_flags.category_updated = True
-                    except ValueError:
-                        self._print("Invalid category. Category must be in grade weights. "
-                            "Cannot update category.")
-                case "due_date" | "duedate":
-                    result_flags.due_date_requested = True
-
-                    try:
-                        new_due_date = self._get_date_input("New due date (MM-DD-YYYY)", "")
-                        
-                        # Only update if due date is different
-                        if new_due_date != self._selected_assignment.due_date:
-                            assignment_controller.edit_due_date(assignment_id, new_due_date)
-                            result_flags.due_date_updated = True
-                    except ValueError:
-                        self._print("Invalid date value. Cannot update due date.")
+                    # Only update if due date is different
+                    if new_due_date != self._selected_assignment.due_date:
+                        assignment_controller.edit_due_date(assignment_id, new_due_date)
+                        result_flags.due_date_updated = True
+                except ValueError:
+                    self._print("Invalid date value. Cannot update due date.")
+            else:
+                self._print(f"Unknown field: {field}. Skipping.")
 
         if result_flags.any_requested():
             self._print("Update results:")
@@ -1218,3 +1221,211 @@ class CliView:
                 self._print("Assignment not found. Operation cancelled.")
         else:
             self._print(f"Operation cancelled. Assignment '{title}' was not removed.")
+
+    def prompt_add_assignment_grade(self) -> None:
+        """Prompt the user for the Assignment and grade they want to add."""
+        assignment_controller = (
+            self
+            ._controller
+            .get_course_controller()
+            .get_assignment_controller()
+        )
+
+        self._print("Enter the following information for the assignment grade you want to add:")
+        title = self._get_string_input("Title", "")
+        try:
+            assignment_controller.find_assignment(title)
+        except ValueError:
+            self._print("Assignment not found. Operation cancelled.")
+            return
+        
+        try:
+            grade = self._get_float_input("Grade", -1.0)
+            assignment_controller.add_grade(title, grade)
+            self._print(f"Grade {grade} added to assignment '{title}'.")
+        except ValueError:
+            self._print("Invalid grade. Grade must be in range 0 to 150. Operation cancelled.")
+            return
+
+    def prompt_remove_assignment_grade(self) -> None:
+        """Prompt the user for the Assignment and grade they want to remove."""
+        invalid_bool = True
+        assignment_controller = (
+            self
+            ._controller
+            .get_course_controller()
+            .get_assignment_controller()
+        )
+
+        self._print("Enter the following information for the assignment grade you want to remove:")
+        title = self._get_string_input("Title", "")
+        
+        # Confirmation before removal
+        confirm = False
+        while (invalid_bool):
+            try:
+                confirm = self._get_bool_input("Are you sure you want to remove the "
+                    "grade from this assignment? (yes/no): ", False)
+                invalid_bool = False
+            except ValueError:
+                self._print("Invalid input. Please enter 'yes' or 'no'.")
+        
+        if confirm:
+            try:
+                assignment_controller.remove_grade(title)
+                self._print(f"Grade removed from assignment '{title}'.")
+            except ValueError:
+                self._print("Assignment not found. Operation cancelled.")
+        else:
+            self._print(f"Operation cancelled. The grade of assignment '{title}' was not removed.")
+
+    def prompt_view_assignment(self) -> None:
+        """Prompt the user for the group of Assignments they want to view."""
+        self.display_view_assignment_menu()
+
+        user_input = self._get_char_input("Response", "X").upper()
+
+        match user_input:
+            case "A":
+                self.display_assignment_list_info()
+            case "C":
+                self.display_completed_assignment_info()
+            case "I":
+                self.display_incomplete_assignment_info()
+            case "X":
+                return
+            case _:
+                self.display_invalid_selection()
+
+    def run(self) -> None:
+        """Starts the main CLI loop and handles user interaction for the program."""
+        state = MenuState.TERM
+        self.display_intro()
+
+        while state != MenuState.EXIT:
+            while state == MenuState.TERM:
+                self.display_term_menu()
+                user_input = self._get_char_input("Response", "X").upper()
+
+                match user_input:
+                    case "A":
+                        # Add Term
+                        self.prompt_add_term()
+                    case "E":
+                        # Edit Term
+                        if len(self._controller.term_list) > 0:
+                            self.prompt_edit_term()
+                        else:
+                            self.display_invalid_selection()
+                    case "S":
+                        # Select Term
+                        if len(self._controller.term_list) > 0:
+                            self.prompt_select_term()
+
+                            if self._selected_term:
+                                self._controller.select_term(self._selected_term.title)
+                                state = MenuState.COURSE
+                        else:
+                            self.display_invalid_selection()
+                    case "R":
+                        # Remove Term
+                        if len(self._controller.term_list) > 0:
+                            self.prompt_remove_term()
+                        else:
+                            self.display_invalid_selection()
+                    case "X":
+                        # Exit
+                        state = MenuState.EXIT
+                    case _:
+                        # Invalid selection
+                        self.display_invalid_selection()
+
+            while state == MenuState.COURSE:
+                self.display_course_menu()
+                user_input = self._get_char_input("Response", "X").upper()
+                
+                match user_input:
+                    case "A":
+                        # Add Course
+                        self.prompt_add_course()
+                    case "E":
+                        # Edit Course
+                        if len(self._controller.course_list) > 0:
+                            self.prompt_edit_course()
+                        else:
+                            self.display_invalid_selection()
+                    case "S":
+                        # Select Course
+                        if len(self._selected_term.course_list) > 0:
+                            self.prompt_select_course()
+                            
+                            if self._selected_course:
+                                (
+                                    self
+                                    ._controller
+                                    .get_course_controller()
+                                    .select_course(self._selected_course.title)
+                                )
+                                state = MenuState.ASSIGNMENT
+                        else:
+                            self.display_invalid_selection()
+                    case "R":
+                        # Remove Course
+                        if len(self._selected_term.course_list) > 0:
+                            self.prompt_remove_course()
+                        else:
+                            self.display_invalid_selection()
+                    case "X":
+                        # Exit
+                        self._selected_term = None
+                        state = MenuState.TERM
+                    case _:
+                        # Invalid selection
+                        self.display_invalid_selection()
+
+            while state == MenuState.ASSIGNMENT:
+                self.display_assignment_menu()
+                user_input = self._get_char_input("Response", "X").upper()
+                
+                match user_input:
+                    case "A":
+                        # Add Assignment
+                        self.prompt_add_assignment()
+                    case "E":
+                        # Edit Assignment
+                        if len(self._selected_course.assignment_list) > 0:
+                            self.prompt_edit_assignment()
+                        else:
+                            self.display_invalid_selection()
+                    case "R":
+                        # Remove Assignment
+                        if len(self._selected_course.assignment_list) > 0:
+                            self.prompt_remove_assignment()
+                        else:
+                            self.display_invalid_selection()
+                    case "G":
+                        # Add grade
+                        if len(self._selected_course.assignment_list) > 0:
+                            self.prompt_add_assignment_grade()
+                        else:
+                            self.display_invalid_selection()
+                    case "M":
+                        # Remove grade
+                        if len(self._selected_course.assignment_list) > 0:
+                            self.prompt_remove_assignment_grade()
+                        else:
+                            self.display_invalid_selection()
+                    case "V":
+                        # View assignment
+                        if len(self._selected_course.assignment_list) > 0:
+                            self.display_assignment_view()
+                        else:
+                            self.display_invalid_selection()
+                    case "X":
+                        # Exit
+                        self._selected_course = None
+                        self._selected_assignment = None
+                        state = MenuState.COURSE
+                    case _:
+                        # Invalid selection
+                        self.display_invalid_selection()
