@@ -72,6 +72,9 @@ class EditCourseResult:
     end_date_requested: bool = False
     end_date_updated: bool = False
 
+    number_of_credits_requested: bool = False
+    number_of_credits_updated: bool = False
+
     active_requested: bool = False
     active_updated: bool = False
 
@@ -82,7 +85,7 @@ class EditCourseResult:
             True if any of the five fields is requested for edit, False otherwise.
         """
         return self.title_requested or self.description_requested or self.start_date_requested \
-            or self.end_date_requested or self.active_requested
+            or self.end_date_requested or self.number_of_credits_requested or self.active_requested
 
     def dates_requested(self) -> bool:
         """Return whether any date field was requested for edit.
@@ -168,6 +171,19 @@ class CliView:
         """
         self._print(text.center(99))
 
+    def _read_line(self, prompt: str) -> str:
+        """Write a prompt to the output stream and read one line from the input stream.
+
+        Args:
+            prompt: The prompt text to display.
+
+        Returns:
+            The line read, without the trailing newline.
+        """
+        self._out_stream.write(prompt)
+        self._out_stream.flush()
+        return self._in_stream.readline().rstrip("\n")
+
     def _get_char_input(self, label: str, default_val: str) -> str:
         """Ask the user for a char input, using the default value 
         in the case of an invalid input.
@@ -179,7 +195,7 @@ class CliView:
         Returns:
             The user's input or the default value.
         """
-        user_input = input(f"{label} [default: {default_val}]: ")
+        user_input = self._read_line(f"{label} [default: {default_val}]: ")
 
         # Check if input is empty
         if not user_input.strip():
@@ -204,7 +220,7 @@ class CliView:
         Returns:
             The user's input or the default value.
         """
-        user_input = input(f"{label} [default: {default_val}]: ")
+        user_input = self._read_line(f"{label} [default: {default_val}]: ")
 
         # Check if input is empty
         if not user_input.strip():
@@ -224,7 +240,7 @@ class CliView:
         Returns:
             The user's input or the default value.
         """
-        user_input = input(f"{label}: ")
+        user_input = self._read_line(f"{label}: ")
 
         # Check if input is empty
         if not user_input.strip():
@@ -248,7 +264,7 @@ class CliView:
         Returns:
             The user's input or the default value.
         """
-        user_input = input(f"{label} [default: {default_val}]: ")
+        user_input = self._read_line(f"{label} [default: {default_val}]: ")
 
         # Check if input is empty
         if not user_input.strip():
@@ -272,7 +288,7 @@ class CliView:
         Returns:
             The user's input or the default value.
         """
-        user_input = input(f"{label} [default: {default_val}]: ")
+        user_input = self._read_line(f"{label} [default: {default_val}]: ")
 
         # Check if input is empty
         if not user_input.strip():
@@ -297,15 +313,15 @@ class CliView:
             The user's input or the default value.
         """
         default_to_string = utils.bool_to_string(default_val).lower()
-        user_input = input(f"{label} [default: {default_to_string}]: ")
+        user_input = self._read_line(f"{label} [default: {default_to_string}]: ")
 
         # Check if input is empty
         if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
 
-        # Convert string to loewrcase, then convert string to bool
-        input_lower = input.lower()
+        # Convert string to lowercase, then convert string to bool
+        input_lower = user_input.lower()
         
         if input_lower == "true" or input_lower == "1" or \
                 input_lower == "yes" or input_lower == "y":
@@ -326,7 +342,7 @@ class CliView:
         Returns:
             The user's input or the default value.
         """
-        user_input = input(f"{label} [default: {default_val}]: ")
+        user_input = self._read_line(f"{label} [default: {default_val}]: ")
         
         # Check if input is empty
         if not user_input.strip():
@@ -357,27 +373,27 @@ class CliView:
             self._print("Invalid grade input, using default value.")
             return defualt_val
         
-    def _get_grade_points_input(self, input: str, default_val: float) -> float:
+    def _get_grade_points_input(self, user_input: str, default_val: float) -> float:
         """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
         using the default value if the input is invalid.
         
         Args:
-            input: The user's input.
+            user_input: The user's input.
             default_val: The default value to use if the input is invalid.
             
         Returns:
             The user's input or the default value.
         """
-        values = input.split("/")
+        values = user_input.split("/")
         if len(values) != 2:
             self._print("Invalid grade input, using default value.")
             return default_val
         try:
-            points_earned = values[0]
-            total_points = values[1]
+            points_earned = float(values[0])
+            total_points = float(values[1])
             calculated_grade = (points_earned / total_points) * 100
             return round(calculated_grade, 2)
-        except (ValueError, IndexError):
+        except (ValueError, ZeroDivisionError):
             self._print("Invalid grade input, using default value.")
             return default_val
 
@@ -539,7 +555,6 @@ class CliView:
         title_empty = True
         invalid_start_date = True
         invalid_end_date = True
-        invalid_date_order = True
         invalid_active = True
         
         self._print("Enter the following information for the term you want to add: ")
@@ -555,27 +570,17 @@ class CliView:
         while invalid_start_date:
             start_date = self._get_date_input("Start Date (MM-DD-YYYY)", \
                 utils.default_start_date)
-
-            try:
-                datetime.strptime(start_date, "%m-d-%Y")
-                invalid_start_date = False
-            except ValueError:
-                self._print("Invalid date format. Please try again.")
+            invalid_start_date = False
         
         while invalid_end_date:
             end_date = self._get_date_input("End Date (MM-DD-YYYY)", \
                 utils.default_end_date)
-            
+
             try:
-                datetime.strptime(end_date, "%m-%d-%Y")
-                invalid_end_date = False
                 utils.validate_date_order(start_date, end_date)
-                invalid_date_order = False
+                invalid_end_date = False
             except ValueError:
-                if invalid_date_order:
-                    self._print("Invalid date format. Please try again.")
-                else:
-                    self._print("End date must be after start date. Please try again.")
+                self._print("End date must be after start date. Please try again.")
         
         while invalid_active:
             try:
@@ -657,7 +662,7 @@ class CliView:
                 try:
                     new_active = self._get_bool_input("Is this a current term? (yes/no)", True)
                     # Only update if active flag is different
-                    if new_active != self._selected_term.is_active:
+                    if new_active != self._selected_term.active:
                         self._controller.edit_active(term_id, new_active)
                         result_flags.active_updated = True
                 except ValueError:
@@ -719,9 +724,9 @@ class CliView:
             try:
                 confirm = self._get_bool_input("Are you sure you want to remove "
                     "this term? (yes/no)", False)
+                invalid_bool = False
             except ValueError:
                 self._print("Invalid response. Please enter 'yes' or 'no'.")
-                continue
 
         if confirm:
             try:
@@ -758,27 +763,17 @@ class CliView:
         while invalid_start_date:
             start_date = self._get_date_input("Start Date (MM-DD-YYYY)", \
                 utils.default_start_date)
-
-            try:
-                datetime.strptime(start_date, "%m-d-%Y")
-                invalid_start_date = False
-            except ValueError:
-                self._print("Invalid date format. Please try again.")
+            invalid_start_date = False
         
         while invalid_end_date:
             end_date = self._get_date_input("End Date (MM-DD-YYYY)", \
                 utils.default_end_date)
             
             try:
-                datetime.strptime(end_date, "%m-%d-%Y")
-                invalid_end_date = False
                 utils.validate_date_order(start_date, end_date)
-                invalid_date_order = False
+                invalid_end_date = False
             except ValueError:
-                if invalid_date_order:
-                    self._print("Invalid date format. Please try again.")
-                else:
-                    self._print("End date must be after start date. Please try again.")
+                self._print("End date must be after start date. Please try again.")
 
         while invalid_num_credits:
             num_credits = self._get_int_input("Number of Credits", 0)
@@ -832,7 +827,7 @@ class CliView:
                 try:
                     new_title = self._get_string_input("New title", "")
                     utils.validate_req_string(new_title, "Title")
-                    self._controller.edit_title(course_id, new_title)
+                    course_controller.edit_title(course_id, new_title)
                     result_flags.title_updated = True
                 except ValueError:
                     if not new_title or new_title.isspace():
@@ -844,11 +839,12 @@ class CliView:
                 result_flags.description_requested = True
                 
                 try:
+                    old_description = self._selected_course.description
                     new_description = self._get_string_input("New description", "")
                     course_controller.edit_description(course_id, new_description)
 
                     # Only set description_updated if old and new descriptions are different
-                    if new_description != self._selected_course.description:
+                    if new_description != old_description:
                         result_flags.description_updated = True
                 except ValueError:
                     if not new_description or new_description.isspace():
@@ -865,7 +861,7 @@ class CliView:
                             self._selected_course.end_date)
                     # Only update if start date is different
                     if new_start_date != self._selected_course.start_date:
-                        self._controller.edit_start_date(course_id, new_start_date)
+                        course_controller.edit_start_date(course_id, new_start_date)
                         result_flags.start_date_updated = True
                 except ValueError:
                     self._print("Invalid date value. Cannot update start date.")
@@ -878,7 +874,7 @@ class CliView:
                     utils.validate_date_order(self._selected_course.start_date, new_end_date)
                     # Only update if end date is different
                     if new_end_date != self._selected_course.end_date:
-                        self._controller.edit_end_date(course_id, new_end_date)
+                        course_controller.edit_end_date(course_id, new_end_date)
                         result_flags.end_date_updated = True
                 except ValueError:
                     self._print("Invalid date value. Cannot update end date.")
@@ -894,7 +890,7 @@ class CliView:
                     else:
                         # Only update if number of credits is different
                         if new_num_credits != self._selected_course.num_credits:
-                            self._controller.edit_num_credits(course_id, new_num_credits)
+                            course_controller.edit_num_credits(course_id, new_num_credits)
                             result_flags.num_credits_updated = True
                 except ValueError:
                     self._print("Number of credits must be a valid integer. Cannot update "
@@ -907,7 +903,7 @@ class CliView:
                         True)
                     # Only update if active flag is different
                     if new_active != self._selected_course.active:
-                        self._controller.edit_active(course_id, new_active)
+                        course_controller.edit_active(course_id, new_active)
                         result_flags.active_updated = True
                 except ValueError:
                     self._print("Invalid boolean value. Cannot update active flag.")
@@ -986,7 +982,6 @@ class CliView:
                 invalid_bool = False
             except ValueError:
                 self._print("Invalid response. Please enter 'yes' or 'no'.")
-                continue
 
         if confirm:
             try:
@@ -1039,15 +1034,11 @@ class CliView:
             try:
                 due_date = self._get_date_input("Due Date (MM/DD/YYYY)", "")
 
-                # Check if date is empty (default); if not, validate input
-                if due_date:
-                    utils.validate_date(due_date, "Due Date")
-                else:
+                if not due_date:
                     self._print("Due date is empty. Using default date.")
                 invalid_due_date = False
             except ValueError:
                 self._print("Invalid due date. Please enter a valid date.")
-                continue
 
         while invalid_completed:
             try:
@@ -1055,7 +1046,6 @@ class CliView:
                 invalid_completed = False
             except ValueError:
                 self._print("Invalid input. Please try again.")
-                continue
         
         # Only set grade if completed is True; otherwise, use default
         if completed:
@@ -1146,7 +1136,7 @@ class CliView:
                 except ValueError:
                     self._print("Invalid category. Category must be in grade weights. "
                         "Cannot update category.")
-            elif field == "due_date" or field == "duedate":
+            elif field == "due date" or field == "duedate":
                 result_flags.due_date_requested = True
 
                 try:
@@ -1350,7 +1340,7 @@ class CliView:
                         self.prompt_add_course()
                     case "E":
                         # Edit Course
-                        if len(self._controller.course_list) > 0:
+                        if len(self._selected_term.course_list) > 0:
                             self.prompt_edit_course()
                         else:
                             self.display_invalid_selection()
@@ -1418,7 +1408,7 @@ class CliView:
                     case "V":
                         # View assignment
                         if len(self._selected_course.assignment_list) > 0:
-                            self.display_assignment_view()
+                            self.prompt_view_assignment()
                         else:
                             self.display_invalid_selection()
                     case "X":
