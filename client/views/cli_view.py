@@ -1,19 +1,19 @@
 # Standard library imports
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-import sys
 import TextIO
+import utils
 
 # Local imports
 from controllers.term_controller import TermController
 from models.assignment import Assignment
 from models.course import Course
 from models.term import Term
-import utils
 
 
 @dataclass
