@@ -4,6 +4,7 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 
+
 def default_start_date() -> datetime:
     """Return today's date at midnight.
 
