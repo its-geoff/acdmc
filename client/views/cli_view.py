@@ -182,7 +182,10 @@ class CliView:
         """
         self._out_stream.write(prompt)
         self._out_stream.flush()
-        return self._in_stream.readline().rstrip("\n")
+        line = self._in_stream.readline()
+        if line == "":
+            raise EOFError("Input stream closed.")
+        return line.rstrip("\n")
 
     def _get_char_input(self, label: str, default_val: str) -> str:
         """Ask the user for a char input, using the default value 
@@ -569,12 +572,12 @@ class CliView:
         
         while invalid_start_date:
             start_date = self._get_date_input("Start Date (MM-DD-YYYY)", \
-                utils.default_start_date)
+                utils.default_start_date())
             invalid_start_date = False
         
         while invalid_end_date:
             end_date = self._get_date_input("End Date (MM-DD-YYYY)", \
-                utils.default_end_date)
+                utils.default_end_date(start_date))
 
             try:
                 utils.validate_date_order(start_date, end_date)
@@ -762,12 +765,12 @@ class CliView:
 
         while invalid_start_date:
             start_date = self._get_date_input("Start Date (MM-DD-YYYY)", \
-                utils.default_start_date)
+                utils.default_start_date())
             invalid_start_date = False
         
         while invalid_end_date:
             end_date = self._get_date_input("End Date (MM-DD-YYYY)", \
-                utils.default_end_date)
+                utils.default_end_date(start_date))
             
             try:
                 utils.validate_date_order(start_date, end_date)
