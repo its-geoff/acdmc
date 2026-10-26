@@ -41,4 +41,6 @@ markers = [
     "course_controller_edge: Edge case tests for CourseController, verifying edge cases",
     "assignment_controller_smoke: Smoke tests for AssignmentController, checking basic functionality",
     "assignment_controller_edge: Edge case tests for AssignmentController, verifying edge cases",
+    "cli_view_smoke: Smoke tests for CliView, checking basic functionality",
+    "cli_view_edge: Edge case tests for CliView, verifying edge cases",
 ]
