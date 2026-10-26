@@ -443,7 +443,7 @@ class CliView:
         self._print_centered("What would you like to do today?")
 
         # Check if there are courses in the list
-        if (self._selected_term._course_list):
+        if (self._selected_term.course_list):
             self._print("[A] Add course")
             self._print("[E] Edit course")
             self._print("[S] Select course")
@@ -462,7 +462,7 @@ class CliView:
         self._print_centered("What would you like to do today?")
 
         # Check if there are assignments in the list
-        if (self._selected_course._assignment_list):
+        if (self._selected_course.assignment_list):
             self._print("[A] Add assignment")
             self._print("[E] Edit assignment")
             self._print("[R] Remove assignment")
@@ -504,7 +504,7 @@ class CliView:
             
     def display_assignment_list_info(self) -> None:
         """Displays information about all assignments from the selected Course."""
-        assignments = self._selected_course._assignment_list
+        assignments = self._selected_course.assignment_list
         
         # Return early if there are no assignments
         if not assignments:
@@ -520,7 +520,7 @@ class CliView:
             
     def display_completed_assignment_info(self) -> None:
         """Displays information about completed assignments from the selected Course."""
-        assignments = self._selected_course._assignment_list
+        assignments = self._selected_course.assignment_list
         completed_assignments = False
         
         for assignment in assignments.values():
@@ -537,7 +537,7 @@ class CliView:
             
     def display_incomplete_assignment_info(self) -> None:
         """Displays information about incomplete assignments from the selected Course."""
-        assignments = self._selected_course._assignment_list
+        assignments = self._selected_course.assignment_list
         incomplete_assignments = False
         
         for assignment in assignments.values():
@@ -610,7 +610,7 @@ class CliView:
         
         try:
             self._selected_term = self._controller.find_term(title)
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Term not found. Operation cancelled.")
             return
         term_id = self._selected_term.id
@@ -657,7 +657,9 @@ class CliView:
                     new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", \
                         self._selected_term.end_date)
                     # Check date order
-                    utils.validate_date_order(self._selected_term.start_date, new_end_date)
+                    start_date = new_start_date if "start date" in edit_fields \
+                        else self._selected_term.start_date
+                    utils.validate_date_order(start_date, new_end_date)
                     # Only update if end date is different
                     if new_end_date != self._selected_term.end_date:
                         self._controller.edit_end_date(term_id, new_end_date)
@@ -715,7 +717,7 @@ class CliView:
         try:
             self._selected_term = self._controller.find_term(title)
             self._print(f"Term '{title}' was selected.")
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Term not found. No selection made.")
             self._selected_term = None
 
@@ -740,7 +742,7 @@ class CliView:
             try:
                 self._controller.remove_term(title)
                 self._print(f"Term '{title}' was removed.")
-            except ValueError:
+            except (ValueError, KeyError):
                 self._print("Term not found. No term was removed.")
         else:
             self._print(f"Operation cancelled. Term '{title}' was not removed.")
@@ -787,7 +789,7 @@ class CliView:
             num_credits = self._get_int_input("Number of Credits", 0)
             
             if num_credits < 0:
-                self._print("Invalid number of credits. Number of credits must be greater"
+                self._print("Invalid number of credits. Number of credits must be greater "
                     "than or equal to 0. Please try again.")
             else:
                 invalid_num_credits = False
@@ -800,7 +802,7 @@ class CliView:
                 self._print("Invalid input. Please try again.")
 
         try:
-            course_controller = self._controller.get_course_controller()
+            course_controller = self._controller.course_controller
             course_controller.add_course(title, description, start_date, end_date,
                 num_credits, active)
             self._print(f"Course '{title}' successfully added.")
@@ -810,14 +812,14 @@ class CliView:
     def prompt_edit_course(self) -> None:
         """Prompt the user for information to edit a Course in the current list."""
         result_flags = EditCourseResult()
-        course_controller = self._controller.get_course_controller()
+        course_controller = self._controller.course_controller
 
         self._print("Enter the following information for the course you want to edit:")
         title = self._get_string_input("Title", "")
         
         try:
             self._selected_course = course_controller.find_course(title)
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Course not found. Operation cancelled.")
             return
         course_id = self._selected_course.id
@@ -943,8 +945,8 @@ class CliView:
                 else:
                     self._print("Duration: (unchanged)")
 
-            if result_flags.num_credits_requested:
-                if result_flags.num_credits_updated:
+            if result_flags.number_of_credits_requested:
+                if result_flags.number_of_credits_updated:
                     self._print(f"Number of credits: {self._selected_course.num_credits}")
                 else:
                     self._print("Number of credits: (unchanged)")
@@ -960,7 +962,7 @@ class CliView:
 
     def prompt_select_course(self) -> None:
         """Prompt the user to select a Course from the list."""
-        course_controller = self._controller.get_course_controller()
+        course_controller = self._controller.course_controller
         
         self._print("Here is a list of all courses:")
         self.display_course_list_info()
@@ -971,14 +973,14 @@ class CliView:
         try:
             self._selected_course = course_controller.find_course(title)
             self._print(f"Course '{title}' was selected.")
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Course not found. No selection made.")
             self._selected_course = None
 
     def prompt_remove_course(self) -> None:
         """Prompt the user to remove a Course from the list."""
         invalid_bool = True
-        course_controller = self._controller.get_course_controller()
+        course_controller = self._controller.course_controller
         
         self._print("Enter the following information for the course you want to remove:")
         title = self._get_string_input("Title", "")
@@ -997,7 +999,7 @@ class CliView:
             try:
                 course_controller.remove_course(title)
                 self._print(f"Course '{title}' was removed.")
-            except ValueError:
+            except (ValueError, KeyError):
                 self._print("Course not found. No Course was removed.")
         else:
             self._print(f"Operation cancelled. Course '{title}' was not removed.")
@@ -1074,14 +1076,14 @@ class CliView:
             assignment_controller = (
                 self
                 ._controller
-                .get_course_controller()
-                .get_assignment_controller()
+                .course_controller
+                .assignment_controller
             )
             assignment_controller.add_assignment(title, description, category, due_date,
                 completed, grade)
             self._print(f"Assignment '{title}' successfully added.")
         except Exception:
-            self._print("An Assignment with this title already exists. Please choose a new title.")
+            self._print("An assignment with this title already exists. Please choose a new title.")
 
     def prompt_edit_assignment(self) -> None:
         """Prompt the user for information to edit an Assignment in the current list."""
@@ -1089,11 +1091,11 @@ class CliView:
         assignment_controller = (
             self
             ._controller
-            .get_course_controller()
-            .get_assignment_controller()
+            .course_controller
+            .assignment_controller
         )
 
-        self._print("Enter the following information for the Assignment you want to edit:")
+        self._print("Enter the following information for the assignment you want to edit:")
         title = self._get_string_input("Title", "")
 
         try:
@@ -1122,7 +1124,7 @@ class CliView:
                     if not new_title or new_title.isspace():
                         self._print("Empty title not allowed. Cannot update title.")
                     else:
-                        self._print("A course with this title already exists. "
+                        self._print("An assignment with this title already exists. "
                             "Cannot update title.")
             elif field == "description":
                 result_flags.description_requested = True
@@ -1198,8 +1200,8 @@ class CliView:
         invalid_bool = True
         assignment_controller = (
             self
-            ._controller.get_course_controller()
-            .get_assignment_controller()
+            ._controller.course_controller
+            .assignment_controller
         )
 
         self._print("Enter the following information for the assignment you want to remove:")
@@ -1219,7 +1221,7 @@ class CliView:
             try:
                 assignment_controller.remove_assignment(title)
                 self._print(f"Assignment '{title}' was removed.")
-            except ValueError:
+            except (ValueError, KeyError):
                 self._print("Assignment not found. Operation cancelled.")
         else:
             self._print(f"Operation cancelled. Assignment '{title}' was not removed.")
@@ -1229,21 +1231,21 @@ class CliView:
         assignment_controller = (
             self
             ._controller
-            .get_course_controller()
-            .get_assignment_controller()
+            .course_controller
+            .assignment_controller
         )
 
         self._print("Enter the following information for the assignment grade you want to add:")
         title = self._get_string_input("Title", "")
         try:
             assignment_controller.find_assignment(title)
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Assignment not found. Operation cancelled.")
             return
         
         try:
-            grade = self._get_float_input("Grade", -1.0)
-            assignment_controller.add_grade(title, grade)
+            grade = self._get_grade_input("Grade", -1.0)
+            assignment_controller.add_grade(title, grade=grade)
             self._print(f"Grade {grade} added to assignment '{title}'.")
         except ValueError:
             self._print("Invalid grade. Grade must be in range 0 to 150. Operation cancelled.")
@@ -1255,8 +1257,8 @@ class CliView:
         assignment_controller = (
             self
             ._controller
-            .get_course_controller()
-            .get_assignment_controller()
+            .course_controller
+            .assignment_controller
         )
 
         self._print("Enter the following information for the assignment grade you want to remove:")
@@ -1276,7 +1278,7 @@ class CliView:
             try:
                 assignment_controller.remove_grade(title)
                 self._print(f"Grade removed from assignment '{title}'.")
-            except ValueError:
+            except (ValueError, KeyError):
                 self._print("Assignment not found. Operation cancelled.")
         else:
             self._print(f"Operation cancelled. The grade of assignment '{title}' was not removed.")
@@ -1365,7 +1367,7 @@ class CliView:
                                 (
                                     self
                                     ._controller
-                                    .get_course_controller()
+                                    .course_controller
                                     .select_course(self._selected_course.title)
                                 )
                                 state = MenuState.ASSIGNMENT
