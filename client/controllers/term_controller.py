@@ -8,7 +8,6 @@ from typing import Mapping
 # Local imports
 from controllers.course_controller import CourseController
 from models.term import Term
-from utils import validate_date_order
 
 
 class TermController:
@@ -129,12 +128,10 @@ class TermController:
 
         Raises:
             KeyError: If a Term with the given ID is not found.
-            ValueError: If the new start date is after the end date.
         """
         if term_id not in self._term_list:
             raise KeyError(f"Term with ID '{term_id}' not found.")
         term = self._term_list[term_id]
-        validate_date_order(new_start_date, term.end_date)
         term.start_date = new_start_date
 
     def edit_end_date(self, term_id: str, new_end_date: datetime) -> None:
@@ -146,12 +143,10 @@ class TermController:
 
         Raises:
             KeyError: If a Term with the given ID is not found.
-            ValueError: If the new end date is before the start date.
         """
         if term_id not in self._term_list:
             raise KeyError(f"Term with ID '{term_id}' not found.")
         term = self._term_list[term_id]
-        validate_date_order(term.start_date, new_end_date)
         term.end_date = new_end_date
 
     def edit_active(self, term_id: str, active: bool) -> None:

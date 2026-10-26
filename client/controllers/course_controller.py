@@ -173,12 +173,10 @@ class CourseController:
             
         Raises:
             KeyError: If a Course with the given ID is not found.
-            ValueError: If the new start date is after the end date.
         """
         if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
-        validate_date_order(new_start_date, course.end_date)
         course.start_date = new_start_date
         
     def edit_end_date(self, course_id: str, new_end_date: datetime) -> None:
@@ -190,12 +188,10 @@ class CourseController:
             
         Raises:
             KeyError: If a Course with the given ID is not found.
-            ValueError: If the new end date is before the start date.
         """
         if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
         course = self._term.find_course(course_id)
-        validate_date_order(course.start_date, new_end_date)
         course.end_date = new_end_date
         
     def edit_num_credits(self, course_id: str, new_num_credits: int) -> None:
