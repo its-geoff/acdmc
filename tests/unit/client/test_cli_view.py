@@ -1084,16 +1084,14 @@ class TestCliView:
 
     @pytest.mark.cli_view_edge
     def test_add_term_start_date_wrong_format(self, controller):
-        """Test adding term with wrong start date format."""
+        """Test adding term with wrong start date format - it should use default."""
         input_stream = io.StringIO(
             "A\n"
             "Spring 2025\n"
             "invalid\n"
             "05-23-2025\n"
+            "12-15-2026\n"
             "yes\n"
-            "X\n"
-            "X\n"
-            "X\n"
             "X\n"
         )
         output_stream = io.StringIO()
@@ -2008,7 +2006,7 @@ class TestCliView:
 
     @pytest.mark.cli_view_edge
     def test_add_course_start_date_wrong_format(self, controller):
-        """Test adding course with wrong start date format."""
+        """Test adding course with wrong start date format - it should use default."""
         input_stream = io.StringIO(
             "A\n"
             "Spring 2025\n"
@@ -2022,10 +2020,9 @@ class TestCliView:
             "\n"
             "invalid\n"
             "05-12-2025\n"
+            "12-15-2026\n"
             "3\n"
             "yes\n"
-            "X\n"
-            "X\n"
             "X\n"
             "X\n"
         )
@@ -3542,7 +3539,7 @@ class TestCliView:
             "Homework 1\n"
             "\n"
             "Homework\n"
-            "2-12-2025\n"
+            "invalid\n"
             "01-30-2025\n"
             "yes\n"
             "90.5\n"
