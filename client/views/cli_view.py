@@ -614,6 +614,7 @@ class CliView:
             self._print("Term not found. Operation cancelled.")
             return
         term_id = self._selected_term.id
+        original_start_date = self._selected_term.start_date
         
         # Get fields that need to be updated and normalize input
         self._print("Fields available: title, start date, end date, active")
@@ -641,13 +642,18 @@ class CliView:
                 try:
                     new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", \
                         self._selected_term.start_date)
-                    # Check date order if only start date is being edited
-                    if "end date" not in edit_fields:
-                        utils.validate_date_order(new_start_date, self._selected_term.end_date)
                     # Only update if start date is different
                     if new_start_date != self._selected_term.start_date:
-                        self._controller.edit_start_date(term_id, new_start_date)
-                        result_flags.start_date_updated = True
+                        # If end date is also being edited, skip controller validation here
+                        # and validate at the end date stage instead
+                        if "end date" in edit_fields:
+                            self._selected_term.start_date = new_start_date
+                            result_flags.start_date_updated = True
+                        else:
+                            # Only editing start date, validate against end date
+                            utils.validate_date_order(new_start_date, self._selected_term.end_date)
+                            self._controller.edit_start_date(term_id, new_start_date)
+                            result_flags.start_date_updated = True
                 except ValueError:
                     self._print("Invalid date value. Cannot update start date.")
             elif field == "end date" or field == "enddate":
@@ -664,8 +670,14 @@ class CliView:
                     if new_end_date != self._selected_term.end_date:
                         self._controller.edit_end_date(term_id, new_end_date)
                         result_flags.end_date_updated = True
+                        # If start date was temporarily set, now save it properly
+                        if "start date" in edit_fields and result_flags.start_date_updated:
+                            self._controller.edit_start_date(term_id, new_start_date)
                 except ValueError:
                     self._print("Invalid date value. Cannot update end date.")
+                    # If start date was temporarily updated, revert it
+                    if "start date" in edit_fields and result_flags.start_date_updated:
+                        self._selected_term.start_date = original_start_date
             elif field == "active":
                 result_flags.active_requested = True
                 
@@ -823,6 +835,8 @@ class CliView:
             self._print("Course not found. Operation cancelled.")
             return
         course_id = self._selected_course.id
+        original_start_date = self._selected_course.start_date
+        new_start_date = original_start_date
 
         # Get fields that need to be updated and normalize input
         self._print("Fields available: title, description, start date, end date, "
@@ -866,14 +880,18 @@ class CliView:
                 try:
                     new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", \
                         self._selected_course.start_date)
-                    # Check date order if only start date is being edited
-                    if "end date" not in edit_fields:
-                        utils.validate_date_order(new_start_date, 
-                            self._selected_course.end_date)
                     # Only update if start date is different
                     if new_start_date != self._selected_course.start_date:
-                        course_controller.edit_start_date(course_id, new_start_date)
-                        result_flags.start_date_updated = True
+                        # If end date is also being edited, skip controller validation here
+                        # and validate at the end date stage instead
+                        if "end date" in edit_fields:
+                            self._selected_course.start_date = new_start_date
+                            result_flags.start_date_updated = True
+                        else:
+                            # Only editing start date, validate against end date
+                            utils.validate_date_order(new_start_date, self._selected_course.end_date)
+                            course_controller.edit_start_date(course_id, new_start_date)
+                            result_flags.start_date_updated = True
                 except ValueError:
                     self._print("Invalid date value. Cannot update start date.")
             elif field == "end date" or field == "enddate":
@@ -883,13 +901,21 @@ class CliView:
                     new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", \
                         self._selected_course.end_date)
                     # Check date order
-                    utils.validate_date_order(self._selected_course.start_date, new_end_date)
+                    start_date = new_start_date if "start date" in edit_fields \
+                        else self._selected_course.start_date
+                    utils.validate_date_order(start_date, new_end_date)
                     # Only update if end date is different
                     if new_end_date != self._selected_course.end_date:
                         course_controller.edit_end_date(course_id, new_end_date)
                         result_flags.end_date_updated = True
+                        # If start date was temporarily set, now save it properly
+                        if "start date" in edit_fields and result_flags.start_date_updated:
+                            course_controller.edit_start_date(course_id, new_start_date)
                 except ValueError:
                     self._print("Invalid date value. Cannot update end date.")
+                    # If start date was temporarily updated, revert it
+                    if "start date" in edit_fields and result_flags.start_date_updated:
+                        self._selected_course.start_date = original_start_date
             elif field == "number of credits" or field == "numberofcredits" \
                     or field == "numcredits":
                 result_flags.num_credits_requested = True
