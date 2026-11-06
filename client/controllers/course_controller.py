@@ -207,9 +207,12 @@ class CourseController:
             
         Raises:
             KeyError: If a Course with the given ID is not found.
+            ValueError: If the new number of credits is less than 0.
         """
         if course_id not in self._term.course_list:
             raise KeyError(f"Course with ID '{course_id}' not found.")
+        if new_num_credits < 0:
+            raise ValueError("Number of credits must be greater than or equal to 0.")
         course = self._term.find_course(course_id)
         course.num_credits = new_num_credits
         
