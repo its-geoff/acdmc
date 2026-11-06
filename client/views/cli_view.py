@@ -889,7 +889,8 @@ class CliView:
                             result_flags.start_date_updated = True
                         else:
                             # Only editing start date, validate against end date
-                            utils.validate_date_order(new_start_date, self._selected_course.end_date)
+                            utils.validate_date_order(new_start_date, 
+                                self._selected_course.end_date)
                             course_controller.edit_start_date(course_id, new_start_date)
                             result_flags.start_date_updated = True
                 except ValueError:
