@@ -5,6 +5,7 @@ from datetime import datetime
 
 import pytest
 
+# Local imports
 from controllers.term_controller import TermController
 from views.cli_view import CliView
 
@@ -2198,7 +2199,8 @@ class TestCliView:
 
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
-        assert "Invalid number of credits. Number of credits must be greater than or equal to 0. Please try again." in user_out
+        assert "Invalid number of credits. Number of credits must be greater than or equal to 0. " \
+            "Please try again." in user_out
 
     @pytest.mark.cli_view_edge
     def test_add_course_active_empty(self, controller):

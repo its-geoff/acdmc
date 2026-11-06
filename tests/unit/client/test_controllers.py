@@ -5,10 +5,10 @@ import re
 from datetime import datetime
 
 import pytest
-from controllers.assignment_controller import AssignmentController
-from controllers.course_controller import CourseController
 
 # Local imports
+from controllers.assignment_controller import AssignmentController
+from controllers.course_controller import CourseController
 from controllers.term_controller import TermController
 from models.assignment import Assignment
 from models.course import Course
