@@ -1491,7 +1491,7 @@ class TestCliView:
 
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
-        assert "Invalid date value. Cannot update start date." in user_out
+        assert "Invalid date order. Cannot update start date." in user_out
 
     @pytest.mark.cli_view_edge
     def test_edit_term_new_start_date_unchanged(self, controller):
@@ -1613,7 +1613,7 @@ class TestCliView:
 
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
-        assert "Invalid date value. Cannot update end date." in user_out
+        assert "Invalid date order. Cannot update end date." in user_out
 
     @pytest.mark.cli_view_edge
     def test_edit_term_new_end_date_unchanged(self, controller):
@@ -2629,7 +2629,7 @@ class TestCliView:
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
         assert "course you want to edit" in user_out
-        assert "Invalid date value. Cannot update start date." in user_out
+        assert "Invalid date order. Cannot update start date." in user_out
 
     @pytest.mark.cli_view_edge
     def test_edit_course_new_start_date_unchanged(self, controller):
@@ -2794,7 +2794,7 @@ class TestCliView:
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
         assert "course you want to edit" in user_out
-        assert "Invalid date value. Cannot update end date." in user_out
+        assert "Invalid date order. Cannot update end date." in user_out
 
     @pytest.mark.cli_view_edge
     def test_edit_course_new_end_date_unchanged(self, controller):
