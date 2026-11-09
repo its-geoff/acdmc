@@ -677,7 +677,7 @@ class CliView:
             if new_start_date is not None and new_end_date is not None:
                 try:
                     utils.validate_date_order(new_start_date, new_end_date)
-                    if (new_start_date != self._selected_term.start_date and 
+                    if (new_start_date != self._selected_term.start_date or 
                         new_end_date != self._selected_term.end_date):
                         self._controller.edit_start_and_end_date(
                             term_id, new_start_date, new_end_date)
@@ -944,7 +944,7 @@ class CliView:
             if new_start_date is not None and new_end_date is not None:
                 try:
                     utils.validate_date_order(new_start_date, new_end_date)
-                    if (new_start_date != self._selected_course.start_date and 
+                    if (new_start_date != self._selected_course.start_date or 
                         new_end_date != self._selected_course.end_date):
                         course_controller.edit_start_and_end_date(
                             course_id, new_start_date, new_end_date)
