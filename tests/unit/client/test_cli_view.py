@@ -1711,6 +1711,37 @@ class TestCliView:
         assert "(unchanged)" in user_out
 
     @pytest.mark.cli_view_edge
+    def test_edit_term_new_start_date_end_date_combo_invalid_order(self, controller):
+        """Test editing term with invalid date order."""
+        input_stream = io.StringIO(
+            "A\n"
+            "Spring 2025\n"
+            "01-10-2025\n"
+            "05-23-2025\n"
+            "yes\n"
+            "E\n"
+            "Spring 2025\n"
+            "start date, end date\n"
+            "08-10-2025\n"
+            "06-12-2025\n"
+            "X\n"
+            "X\n"
+            "X\n"
+            "X\n"
+        )
+        output_stream = io.StringIO()
+
+        view = CliView(controller, input_stream, output_stream)
+        view.run()
+
+        term_list = controller.term_list
+        assert len(term_list) == 1
+
+        user_out = output_stream.getvalue()
+        assert "Welcome to ACDMC!" in user_out
+        assert "Invalid date order. Cannot update dates." in user_out
+
+    @pytest.mark.cli_view_edge
     def test_edit_term_new_active_empty(self, controller):
         """Test editing term with empty active flag."""
         input_stream = io.StringIO(
@@ -2917,6 +2948,48 @@ class TestCliView:
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
         assert "course you want to edit" in user_out
+
+    @pytest.mark.cli_view_edge
+    def test_edit_course_new_start_date_end_date_combo_invalid_order(self, controller):
+        """Test editing course with invalid date order."""
+        input_stream = io.StringIO(
+            "A\n"
+            "Spring 2025\n"
+            "01-10-2025\n"
+            "05-23-2025\n"
+            "yes\n"
+            "S\n"
+            "Spring 2025\n"
+            "A\n"
+            "ENGR 195A\n"
+            "\n"
+            "01-02-2025\n"
+            "05-12-2025\n"
+            "3\n"
+            "yes\n"
+            "E\n"
+            "ENGR 195A\n"
+            "start date, end date\n"
+            "08-10-2025\n"
+            "06-12-2025\n"
+            "X\n"
+            "X\n"
+            "X\n"
+            "X\n"
+        )
+        output_stream = io.StringIO()
+
+        view = CliView(controller, input_stream, output_stream)
+        view.run()
+        course_controller = controller.course_controller
+
+        course_list = course_controller.get_course_list()
+        assert len(course_list) == 1
+
+        user_out = output_stream.getvalue()
+        assert "Welcome to ACDMC!" in user_out
+        assert "course you want to edit" in user_out
+        assert "Invalid date order. Cannot update dates." in user_out
 
     @pytest.mark.cli_view_edge
     def test_edit_course_new_num_credits_empty(self, controller):
