@@ -677,12 +677,11 @@ class CliView:
             if new_start_date is not None and new_end_date is not None:
                 try:
                     utils.validate_date_order(new_start_date, new_end_date)
-                    # Apply both changes directly to the term object
-                    if new_start_date != self._selected_term.start_date:
-                        self._selected_term.start_date = new_start_date
+                    if (new_start_date != self._selected_term.start_date and 
+                        new_end_date != self._selected_term.end_date):
+                        self._controller.edit_start_and_end_date(
+                            term_id, new_start_date, new_end_date)
                         result_flags.start_date_updated = True
-                    if new_end_date != self._selected_term.end_date:
-                        self._selected_term.end_date = new_end_date
                         result_flags.end_date_updated = True
                 except ValueError:
                     self._print("Invalid date order. Cannot update dates.")
@@ -945,12 +944,11 @@ class CliView:
             if new_start_date is not None and new_end_date is not None:
                 try:
                     utils.validate_date_order(new_start_date, new_end_date)
-                    # Apply both changes directly to the course object
-                    if new_start_date != self._selected_course.start_date:
-                        self._selected_course.start_date = new_start_date
+                    if (new_start_date != self._selected_course.start_date and 
+                        new_end_date != self._selected_course.end_date):
+                        course_controller.edit_start_and_end_date(
+                            course_id, new_start_date, new_end_date)
                         result_flags.start_date_updated = True
-                    if new_end_date != self._selected_course.end_date:
-                        self._selected_course.end_date = new_end_date
                         result_flags.end_date_updated = True
                 except ValueError:
                     self._print("Invalid date order. Cannot update dates.")
@@ -1133,7 +1131,7 @@ class CliView:
             assignment_controller.add_assignment(title, description, category, due_date,
                 completed, grade)
             self._print(f"Assignment '{title}' successfully added.")
-        except Exception:
+        except ValueError:
             self._print("An assignment with this title already exists. Please choose a new title.")
 
     def prompt_edit_assignment(self) -> None:
@@ -1150,11 +1148,11 @@ class CliView:
         title = self._get_string_input("Title", "")
 
         try:
-            self._selected_assignment = assignment_controller.get_assignment_by_title(title)
-        except Exception:
+            self._selected_assignment = assignment_controller.find_assignment(title)
+        except KeyError:
             self._print("Assignment not found. Operation cancelled.")
             return
-        assignment_id = self._selected_assignment.assignment_id
+        assignment_id = self._selected_assignment.id
 
         # Get fields that need to be updated and normalize input
         self._print("Fields available: title, description, category, due date")

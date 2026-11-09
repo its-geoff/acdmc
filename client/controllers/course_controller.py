@@ -198,6 +198,26 @@ class CourseController:
         validate_date_order(course.start_date, new_end_date)
         course.end_date = new_end_date
         
+    def edit_start_and_end_date(self, course_id: str, new_start_date: datetime, 
+        new_end_date: datetime) -> None:
+        """Edit both the start and end dates of a Course.
+        
+        Args:
+            course_id: The ID of the Course to edit.
+            new_start_date: The new start date of the Course.
+            new_end_date: The new end date of the Course.
+
+        Raises:
+            KeyError: If a Course with the given ID is not found.
+            ValueError: If the new start date is after the end date or vice versa.
+        """
+        if course_id not in self._term.course_list:
+            raise KeyError(f"Course with ID '{course_id}' not found.")
+        course = self._term.find_course(course_id)
+        validate_date_order(new_start_date, new_end_date)
+        course.start_date = new_start_date
+        course.end_date = new_end_date
+
     def edit_num_credits(self, course_id: str, new_num_credits: int) -> None:
         """Edit the number of credits of a Course.
         
