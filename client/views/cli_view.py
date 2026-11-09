@@ -397,10 +397,12 @@ class CliView:
         try:
             points_earned = float(values[0])
             total_points = float(values[1])
+            if total_points <= 0.0:
+                raise ValueError("Total points must be greater than 0")
             calculated_grade = (points_earned / total_points) * 100
             return round(calculated_grade, 2)
-        except (ValueError, ZeroDivisionError):
-            self._print("Invalid grade input, using default value.")
+        except (ValueError, ZeroDivisionError) as e:
+            self._print(f"Invalid grade input: {e}, using default value.")
             return default_val
 
     def display_delim(self) -> None:

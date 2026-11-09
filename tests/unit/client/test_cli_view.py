@@ -1679,6 +1679,38 @@ class TestCliView:
         assert "Duration" in user_out
 
     @pytest.mark.cli_view_edge
+    def test_edit_term_both_dates_requested_one_changed(self, controller):
+        """Test editing term with both dates requested but only one changed."""
+        input_stream = io.StringIO(
+            "A\n"
+            "Spring 2025\n"
+            "01-10-2025\n"
+            "05-23-2025\n"
+            "yes\n"
+            "E\n"
+            "Spring 2025\n"
+            "start date, end date\n"
+            "06-10-2025\n"
+            "05-23-2025\n"
+            "X\n"
+            "X\n"
+            "X\n"
+            "X\n"
+        )
+        output_stream = io.StringIO()
+
+        view = CliView(controller, input_stream, output_stream)
+        view.run()
+
+        term_list = controller.term_list
+        assert len(term_list) == 1
+
+        user_out = output_stream.getvalue()
+        assert "Welcome to ACDMC!" in user_out
+        assert "Update results" in user_out
+        assert "Duration" in user_out
+
+    @pytest.mark.cli_view_edge
     def test_edit_term_new_start_date_end_date_combo_unchanged(self, controller):
         """Test editing term with unchanged start and end dates."""
         input_stream = io.StringIO(
@@ -2907,6 +2939,49 @@ class TestCliView:
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
         assert "course you want to edit" in user_out
+
+    @pytest.mark.cli_view_edge
+    def test_edit_course_both_dates_requested_one_changed(self, controller):
+        """Test editing course with both dates requested but only one changed."""
+        input_stream = io.StringIO(
+            "A\n"
+            "Spring 2025\n"
+            "01-10-2025\n"
+            "05-23-2025\n"
+            "yes\n"
+            "S\n"
+            "Spring 2025\n"
+            "A\n"
+            "ENGR 195A\n"
+            "\n"
+            "01-02-2025\n"
+            "05-12-2025\n"
+            "3\n"
+            "yes\n"
+            "E\n"
+            "ENGR 195A\n"
+            "start date, end date\n"
+            "06-11-2025\n"
+            "05-12-2025\n"
+            "X\n"
+            "X\n"
+            "X\n"
+            "X\n"
+        )
+        output_stream = io.StringIO()
+
+        view = CliView(controller, input_stream, output_stream)
+        view.run()
+        course_controller = controller.course_controller
+
+        course_list = course_controller.get_course_list()
+        assert len(course_list) == 1
+
+        user_out = output_stream.getvalue()
+        assert "Welcome to ACDMC!" in user_out
+        assert "course you want to edit" in user_out
+        assert "Update results" in user_out
+        assert "Duration" in user_out
 
     @pytest.mark.cli_view_edge
     def test_edit_course_new_start_date_end_date_combo_unchanged(self, controller):
@@ -5476,6 +5551,55 @@ class TestCliView:
             "G\n"
             "Homework 1\n"
             "20/0\n"
+            "X\n"
+            "X\n"
+            "X\n"
+            "X\n"
+        )
+        output_stream = io.StringIO()
+
+        view = CliView(controller, input_stream, output_stream)
+        view.run()
+        assignment_controller = controller.course_controller.assignment_controller
+
+        assignment_list = assignment_controller.get_assignment_list()
+        assert len(assignment_list) == 1
+
+        user_out = output_stream.getvalue()
+        assert "Welcome to ACDMC!" in user_out
+        assert "for the assignment grade you want to add" in user_out
+        assert "Invalid grade input" in user_out
+
+    @pytest.mark.cli_view_edge
+    def test_add_assignment_grade_points_earned_and_total_points_negative(self, controller):
+        """Test adding assignment grade with points earning and total points negative."""
+        input_stream = io.StringIO(
+            "A\n"
+            "Spring 2025\n"
+            "01-10-2025\n"
+            "05-23-2025\n"
+            "yes\n"
+            "S\n"
+            "Spring 2025\n"
+            "A\n"
+            "ENGR 195A\n"
+            "\n"
+            "01-02-2025\n"
+            "05-12-2025\n"
+            "3\n"
+            "yes\n"
+            "S\n"
+            "ENGR 195A\n"
+            "A\n"
+            "Homework 1\n"
+            "\n"
+            "Homework\n"
+            "01-30-2025\n"
+            "no\n"
+            "-10.5\n"
+            "G\n"
+            "Homework 1\n"
+            "-5/-2\n"
             "X\n"
             "X\n"
             "X\n"
