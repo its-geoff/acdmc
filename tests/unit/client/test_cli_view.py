@@ -4391,6 +4391,7 @@ class TestCliView:
             "\n"
             "X\n"
             "X\n"
+            "X\n"
         )
         output_stream = io.StringIO()
 

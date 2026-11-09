@@ -154,6 +154,26 @@ class TermController:
         validate_date_order(term.start_date, new_end_date)
         term.end_date = new_end_date
 
+    def edit_start_and_end_date(self, term_id: str, new_start_date: datetime, 
+        new_end_date: datetime) -> None:
+        """Edit both the start and end dates of a Term.
+        
+        Args:
+            term_id: The ID of the Term to edit.
+            new_start_date: The new start date of the Term.
+            new_end_date: The new end date of the Term.
+
+        Raises:
+            KeyError: If a Term with the given ID is not found.
+            ValueError: If the new start date is after the end date or vice versa.
+        """
+        if term_id not in self._term_list:
+            raise KeyError(f"Term with ID '{term_id}' not found.")
+        term = self._term_list[term_id]
+        validate_date_order(new_start_date, new_end_date)
+        term.start_date = new_start_date
+        term.end_date = new_end_date
+
     def edit_active(self, term_id: str, active: bool) -> None:
         """Edit the active status of a Term.
         
