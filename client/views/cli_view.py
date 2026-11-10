@@ -325,20 +325,6 @@ class CliView:
         if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
-
-        # Convert string to lowercase, then convert string to bool
-        input_lower = user_input.lower()
-        
-        if input_lower == "true" or input_lower == "1" or \
-                input_lower == "yes" or input_lower == "y":
-            return True
-        elif input_lower == "false" or input_lower == "0" or \
-                input_lower == "no" or input_lower == "n":
-            return False
-        else:
-            raise ValueError("Invalid boolean string.")
-
-    def _get_grade_input(self, label: str, default_val: float) -> float:
         """Ask the user for grade input and detect the format based on the input string.
 
         Args:
@@ -401,8 +387,8 @@ class CliView:
         """
         values = user_input.split("/")
         if len(values) != 2:
-            self._print("Invalid grade input, using default value.")
-            return default_val
+            self._print("Invalid grade input. Please try again.")
+            raise ValueError("Invalid grade points input")
         try:
             points_earned = float(values[0])
             total_points = float(values[1])
