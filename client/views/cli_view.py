@@ -331,15 +331,18 @@ class CliView:
             label: The label to display to the user.
             default_val: The default value to use if the user provides no input.
             
+            
         Returns:
             The user's input or the default value.
         """
         user_input = self._read_line(f"{label} [default: {default_val}]: ")
         
+        
         # Check if input is empty
         if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
+        
         
         if "/" in user_input:
             # Slash found, use point-based version
@@ -349,8 +352,10 @@ class CliView:
             return self._get_grade_pct_input(user_input, default_val)
     
     def _get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
+    def _get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
         """Parse percentage-based grade input in float form (0.0) and output the value,
         using the default value if the input is invalid.
+        
         
         Args:
             user_input: The user's input.
@@ -383,10 +388,12 @@ class CliView:
         try:
             points_earned = float(values[0])
             total_points = float(values[1])
+            if total_points <= 0.0:
+                raise ValueError("Total points must be greater than 0")
             calculated_grade = (points_earned / total_points) * 100
             return round(calculated_grade, 2)
-        except (ValueError, ZeroDivisionError):
-            self._print("Invalid grade input, using default value.")
+        except (ValueError, ZeroDivisionError) as e:
+            self._print(f"Invalid grade input: {e}, using default value.")
             return default_val
 
     def display_delim(self) -> None:
