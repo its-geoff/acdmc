@@ -326,24 +326,21 @@ class CliView:
             self._print("No input provided, using default value.")
             return default_val
         """Ask the user for grade input and detect the format based on the input string.
-
+        
         Args:
             label: The label to display to the user.
             default_val: The default value to use if the user provides no input.
-
+            
         Returns:
             The user's input or the default value.
-
-        Raises:
-            ValueError: If the grade input is invalid (to signal caller to retry).
         """
         user_input = self._read_line(f"{label} [default: {default_val}]: ")
-
+        
         # Check if input is empty
         if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
-
+        
         if "/" in user_input:
             # Slash found, use point-based version
             return self._get_grade_points_input(user_input, default_val)
@@ -351,39 +348,33 @@ class CliView:
             # Slash not found, use percentage-based version
             return self._get_grade_pct_input(user_input, default_val)
     
-    def _get_grade_pct_input(self, user_input: str, default_val: float) -> float:
+    def _get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
         """Parse percentage-based grade input in float form (0.0) and output the value,
         using the default value if the input is invalid.
-
+        
         Args:
             user_input: The user's input.
-            default_val: The default value to use if the input is invalid.
-
+            defualt_val: The default value to use if the input is invalid.
+            
         Returns:
             The user's input or the default value.
-
-        Raises:
-            ValueError: If the grade input is invalid (to signal caller to retry).
         """
         try:
             return round(float(user_input), 2)
         except ValueError:
-            self._print("Invalid grade input. Please try again.")
-            raise ValueError("Invalid grade percentage input") from None
+            self._print("Invalid grade input, using default value.")
+            return defualt_val
         
     def _get_grade_points_input(self, user_input: str, default_val: float) -> float:
         """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
         using the default value if the input is invalid.
-
+        
         Args:
             user_input: The user's input.
             default_val: The default value to use if the input is invalid.
-
+            
         Returns:
             The user's input or the default value.
-
-        Raises:
-            ValueError: If the grade input is invalid (to signal caller to retry).
         """
         values = user_input.split("/")
         if len(values) != 2:
@@ -393,12 +384,12 @@ class CliView:
             points_earned = float(values[0])
             total_points = float(values[1])
             if total_points <= 0.0:
-                raise ValueError("Total points must be greater than 0.") from None
+                raise ValueError("Total points must be greater than 0")
             calculated_grade = (points_earned / total_points) * 100
             return round(calculated_grade, 2)
         except (ValueError, ZeroDivisionError) as e:
-            self._print(f"Invalid grade input: {e}. Please try again.")
-            raise ValueError("Invalid grade points input") from None
+            self._print(f"Invalid grade input: {e}, using default value.")
+            return default_val
 
     def display_delim(self) -> None:
         """Prints a delimiter line to separate different sections of information."""
@@ -1109,16 +1100,12 @@ class CliView:
         # Only set grade if completed is True; otherwise, use default
         if completed:
             while invalid_grade:
-                try:
-                    grade = self._get_grade_input("Grade", 0.0)
+                grade = self._get_grade_input("Grade", 0.0)
 
-                    if grade > 150.0 or grade < 0.0:
-                        self._print("Invalid grade. Grade must be from 0 to 150. Please try again.")
-                    else:
-                        invalid_grade = False
-                except ValueError:
-                    # _get_grade_input already printed an error message
-                    pass
+                if grade > 150.0 or grade < 0.0:
+                    self._print("Invalid grade. Grade must be from 0 to 150. Please try again.")
+                else:
+                    invalid_grade = False
         else:
             grade = 0.0
 
@@ -1295,15 +1282,10 @@ class CliView:
         
         try:
             grade = self._get_grade_input("Grade", -1.0)
-            # Validate grade range
-            if grade < 0.0 or grade > 150.0:
-                self._print("Invalid grade. Grade must be in range 0 to 150. Operation cancelled.")
-                return
             assignment_controller.add_grade(title, grade=grade)
             self._print(f"Grade {grade} added to assignment '{title}'.")
         except ValueError:
-            # _get_grade_input already printed an error message
-            self._print("Operation cancelled.")
+            self._print("Invalid grade. Grade must be in range 0 to 150. Operation cancelled.")
             return
 
     def prompt_remove_assignment_grade(self) -> None:
