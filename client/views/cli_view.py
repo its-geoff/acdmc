@@ -325,6 +325,20 @@ class CliView:
         if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
+
+        # Convert string to lowercase, then convert string to bool
+        input_lower = user_input.lower()
+
+        if input_lower == "true" or input_lower == "1" or \
+                input_lower == "yes" or input_lower == "y":
+            return True
+        elif input_lower == "false" or input_lower == "0" or \
+                input_lower == "no" or input_lower == "n":
+            return False
+        else:
+            raise ValueError("Invalid boolean string.")
+
+    def _get_grade_input(self, label: str, default_val: float) -> float:
         """Ask the user for grade input and detect the format based on the input string.
         
         Args:
@@ -350,16 +364,15 @@ class CliView:
         else:
             # Slash not found, use percentage-based version
             return self._get_grade_pct_input(user_input, default_val)
-    
-    def _get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
-    def _get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
+
+    def _get_grade_pct_input(self, user_input: str, default_val: float) -> float:
         """Parse percentage-based grade input in float form (0.0) and output the value,
         using the default value if the input is invalid.
         
         
         Args:
             user_input: The user's input.
-            defualt_val: The default value to use if the input is invalid.
+            default_val: The default value to use if the input is invalid.
             
         Returns:
             The user's input or the default value.
@@ -368,7 +381,7 @@ class CliView:
             return round(float(user_input), 2)
         except ValueError:
             self._print("Invalid grade input, using default value.")
-            return defualt_val
+            return default_val
         
     def _get_grade_points_input(self, user_input: str, default_val: float) -> float:
         """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
