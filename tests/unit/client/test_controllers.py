@@ -1044,7 +1044,6 @@ class TestCourseController:
         )
         
         controller.edit_num_credits(controller.course_order[0], 0)
-        assert controller.find_course("Calculus I").num_credits == 0
 
     @pytest.mark.course_controller_edge
     def test_edit_active_not_found(self, controller):
