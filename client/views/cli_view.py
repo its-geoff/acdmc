@@ -376,12 +376,15 @@ class CliView:
             
         Returns:
             The user's input or the default value.
+
+        Raises:
+            ValueError: If the input is invalid.
         """
         try:
             return round(float(user_input), 2)
-        except ValueError:
-            self._print("Invalid grade input, using default value.")
-            return default_val
+        except ValueError as e:
+            self._print(f"Invalid grade input: {e}, using default value.")
+            raise ValueError(f"Invalid grade input: {e}") from e
         
     def _get_grade_points_input(self, user_input: str, default_val: float) -> float:
         """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
@@ -1118,9 +1121,12 @@ class CliView:
         # Only set grade if completed is True; otherwise, use default
         if completed:
             while invalid_grade:
-                grade = self._get_grade_input("Grade", 0.0)
+                try:
+                    grade = self._get_grade_input("Grade", 0.0)
+                except ValueError:
+                    continue
 
-                if grade > 150.0 or grade < 0.0:
+                if not 0.0 <= grade <= 150.0:
                     self._print("Invalid grade. Grade must be from 0 to 150. Please try again.")
                 else:
                     invalid_grade = False
