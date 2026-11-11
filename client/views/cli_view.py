@@ -369,7 +369,6 @@ class CliView:
         """Parse percentage-based grade input in float form (0.0) and output the value,
         using the default value if the input is invalid.
         
-        
         Args:
             user_input: The user's input.
             default_val: The default value to use if the input is invalid.
