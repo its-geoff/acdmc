@@ -360,19 +360,17 @@ class CliView:
         
         if "/" in user_input:
             # Slash found, use point-based version
-            return self._get_grade_points_input(user_input, default_val)
+            return self._get_grade_points_input(user_input)
         else:
             # Slash not found, use percentage-based version
-            return self._get_grade_pct_input(user_input, default_val)
+            return self._get_grade_pct_input(user_input)
 
-    def _get_grade_pct_input(self, user_input: str, default_val: float) -> float:
-        """Parse percentage-based grade input in float form (0.0) and output the value,
-        using the default value if the input is invalid.
-        
+    def _get_grade_pct_input(self, user_input: str) -> float:
+        """Parse percentage-based grade input in float form (0.0) and output the value.
+
         Args:
             user_input: The user's input.
-            default_val: The default value to use if the input is invalid.
-            
+
         Returns:
             The user's input or the default value.
 
@@ -382,19 +380,20 @@ class CliView:
         try:
             return round(float(user_input), 2)
         except ValueError as e:
-            self._print(f"Invalid grade input: {e}, using default value.")
+            self._print(f"Invalid grade input: {e}. Please try again.")
             raise ValueError(f"Invalid grade input: {e}") from e
         
-    def _get_grade_points_input(self, user_input: str, default_val: float) -> float:
-        """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
-        using the default value if the input is invalid.
-        
+    def _get_grade_points_input(self, user_input: str) -> float:
+        """Parse point-based grade input in the form 0.0/0.0 and output the calculation.
+
         Args:
             user_input: The user's input.
-            default_val: The default value to use if the input is invalid.
-            
+
         Returns:
-            The user's input or the default value.
+            The calculated grade as a percentage.
+
+        Raises:
+            ValueError: If the input is invalid (wrong format, negative divisor, etc.).
         """
         values = user_input.split("/")
         if len(values) != 2:
@@ -408,8 +407,8 @@ class CliView:
             calculated_grade = (points_earned / total_points) * 100
             return round(calculated_grade, 2)
         except (ValueError, ZeroDivisionError) as e:
-            self._print(f"Invalid grade input: {e}, using default value.")
-            return default_val
+            self._print(f"Invalid grade input: {e}. Please try again.")
+            raise ValueError(f"Invalid grade points input: {e}") from e
 
     def display_delim(self) -> None:
         """Prints a delimiter line to separate different sections of information."""
@@ -1305,10 +1304,15 @@ class CliView:
         
         try:
             grade = self._get_grade_input("Grade", -1.0)
+            # Validate grade range
+            if grade < 0.0 or grade > 150.0:
+                self._print("Invalid grade. Grade must be in range 0 to 150. Operation cancelled.")
+                return
             assignment_controller.add_grade(title, grade=grade)
             self._print(f"Grade {grade} added to assignment '{title}'.")
         except ValueError:
-            self._print("Invalid grade. Grade must be in range 0 to 150. Operation cancelled.")
+            # _get_grade_input already printed an error message
+            self._print("Operation cancelled.")
             return
 
     def prompt_remove_assignment_grade(self) -> None:
