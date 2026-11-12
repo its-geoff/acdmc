@@ -4146,6 +4146,7 @@ class TestCliView:
             "01-30-2025\n"
             "yes\n"
             "/20\n"
+            "90.5\n"
             "X\n"
             "X\n"
             "X\n"
@@ -4188,6 +4189,7 @@ class TestCliView:
             "01-30-2025\n"
             "yes\n"
             "20/-10\n"
+            "90.5\n"
             "X\n"
             "X\n"
             "X\n"
@@ -4230,6 +4232,7 @@ class TestCliView:
             "01-30-2025\n"
             "yes\n"
             "20/0\n"
+            "90.5\n"
             "X\n"
             "X\n"
             "X\n"
@@ -5427,6 +5430,7 @@ class TestCliView:
             "G\n"
             "Homework 1\n"
             "16/-20\n"
+            "80\n"
             "X\n"
             "X\n"
             "X\n"
@@ -5444,7 +5448,7 @@ class TestCliView:
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
         assert "for the assignment grade you want to add" in user_out
-        assert "Invalid grade. Grade must be in range 0 to 150. Operation cancelled." in user_out
+        assert "Invalid grade input" in user_out
 
     @pytest.mark.cli_view_edge
     def test_add_assignment_grade_points_divide_by_zero(self, controller):
