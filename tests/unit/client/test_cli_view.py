@@ -4157,6 +4157,14 @@ class TestCliView:
         view = CliView(controller, input_stream, output_stream)
         view.run()
 
+        assignment_controller = controller.course_controller.assignment_controller
+        assignment_list = assignment_controller.get_assignment_list()
+        assert len(assignment_list) == 1
+
+        selected_assignment = assignment_controller.find_assignment("Homework 1")
+        assert selected_assignment.completed is True
+        assert math.isclose(selected_assignment.grade, 90.5, abs_tol=1e-9)
+
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
         assert "for the assignment you want to add" in user_out
@@ -4200,6 +4208,14 @@ class TestCliView:
         view = CliView(controller, input_stream, output_stream)
         view.run()
 
+        assignment_controller = controller.course_controller.assignment_controller
+        assignment_list = assignment_controller.get_assignment_list()
+        assert len(assignment_list) == 1
+
+        selected_assignment = assignment_controller.find_assignment("Homework 1")
+        assert selected_assignment.completed is True
+        assert math.isclose(selected_assignment.grade, 90.5, abs_tol=1e-9)
+
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
         assert "for the assignment you want to add" in user_out
@@ -4242,6 +4258,14 @@ class TestCliView:
 
         view = CliView(controller, input_stream, output_stream)
         view.run()
+
+        assignment_controller = controller.course_controller.assignment_controller
+        assignment_list = assignment_controller.get_assignment_list()
+        assert len(assignment_list) == 1
+
+        selected_assignment = assignment_controller.find_assignment("Homework 1")
+        assert selected_assignment.completed is True
+        assert math.isclose(selected_assignment.grade, 90.5, abs_tol=1e-9)
 
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
