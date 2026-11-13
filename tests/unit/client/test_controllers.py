@@ -5,10 +5,10 @@ import re
 from datetime import datetime
 
 import pytest
-from controllers.assignment_controller import AssignmentController
-from controllers.course_controller import CourseController
 
 # Local imports
+from controllers.assignment_controller import AssignmentController
+from controllers.course_controller import CourseController
 from controllers.term_controller import TermController
 from models.assignment import Assignment
 from models.course import Course
@@ -806,23 +806,23 @@ class TestCourseController:
         active_course = controller.active_course
         assert active_course.title == "Calculus I"
 
-    # @pytest.mark.course_controller_smoke
-    # def test_assignment_controller_property(self, controller):
-    #     """Test that assignment_controller property returns AssignmentController 
-    #     when course is selected.
-    #     """
-    #     controller.add_course(
-    #         "Calculus I",
-    #         "Introduction to calculus",
-    #         datetime(2025, 8, 20),
-    #         datetime(2025, 12, 15),
-    #         4,
-    #         True
-    #     )
-    #     controller.select_course("Calculus I")
+    @pytest.mark.course_controller_smoke
+    def test_assignment_controller_property(self, controller):
+        """Test that assignment_controller property returns AssignmentController 
+        when course is selected.
+        """
+        controller.add_course(
+            "Calculus I",
+            "Introduction to calculus",
+            datetime(2025, 8, 20),
+            datetime(2025, 12, 15),
+            4,
+            True
+        )
+        controller.select_course("Calculus I")
 
-    #     assignment_controller = controller.assignment_controller
-    #     assert assignment_controller is not None
+        assignment_controller = controller.assignment_controller
+        assert assignment_controller is not None
 
     @pytest.mark.course_controller_edge
     def test_course_order_getter_empty(self, controller):
@@ -1017,6 +1017,35 @@ class TestCourseController:
             controller.edit_num_credits("non-existent-id", 3)
 
     @pytest.mark.course_controller_edge
+    def test_edit_num_credits_negative(self, controller):
+        """Test that edit_num_credits raises ValueError when credits are negative."""
+        controller.add_course(
+            "Calculus I",
+            "Introduction to calculus",
+            datetime(2025, 8, 20),
+            datetime(2025, 12, 15),
+            4,
+            True
+        )
+        
+        with pytest.raises(ValueError):
+            controller.edit_num_credits(controller.course_order[0], -1)
+
+    @pytest.mark.course_controller_edge
+    def test_edit_num_credits_zero(self, controller):
+        """Test that edit_num_credits runs successfully when credits are zero."""
+        controller.add_course(
+            "Calculus I",
+            "Introduction to calculus",
+            datetime(2025, 8, 20),
+            datetime(2025, 12, 15),
+            4,
+            True
+        )
+        
+        controller.edit_num_credits(controller.course_order[0], 0)
+
+    @pytest.mark.course_controller_edge
     def test_edit_active_not_found(self, controller):
         """Test that edit_active raises KeyError when course ID not found."""
         controller.add_course(
@@ -1181,20 +1210,20 @@ class TestCourseController:
         with pytest.raises(ValueError, match="No Course selected"):
             _ = controller.active_course
 
-    # @pytest.mark.course_controller_edge
-    # def test_assignment_controller_property_not_selected(self, controller):
-    #     """Test that assignment_controller property raises ValueError when no course selected."""
-    #     controller.add_course(
-    #         "Calculus I",
-    #         "Introduction to calculus",
-    #         datetime(2025, 8, 20),
-    #         datetime(2025, 12, 15),
-    #         4,
-    #         True
-    #     )
+    @pytest.mark.course_controller_edge
+    def test_assignment_controller_property_not_selected(self, controller):
+        """Test that assignment_controller property raises ValueError when no course selected."""
+        controller.add_course(
+            "Calculus I",
+            "Introduction to calculus",
+            datetime(2025, 8, 20),
+            datetime(2025, 12, 15),
+            4,
+            True
+        )
 
-    #     with pytest.raises(ValueError, match="No Course selected"):
-    #         _ = controller.assignment_controller
+        with pytest.raises(ValueError, match="No Course selected"):
+            _ = controller.assignment_controller
 
     @pytest.mark.course_controller_edge
     def test_remove_active_course(self, controller):

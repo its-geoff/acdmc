@@ -328,7 +328,7 @@ class CliView:
 
         # Convert string to lowercase, then convert string to bool
         input_lower = user_input.lower()
-        
+
         if input_lower == "true" or input_lower == "1" or \
                 input_lower == "yes" or input_lower == "y":
             return True
@@ -345,63 +345,70 @@ class CliView:
             label: The label to display to the user.
             default_val: The default value to use if the user provides no input.
             
+            
         Returns:
             The user's input or the default value.
         """
         user_input = self._read_line(f"{label} [default: {default_val}]: ")
+        
         
         # Check if input is empty
         if not user_input.strip():
             self._print("No input provided, using default value.")
             return default_val
         
+        
         if "/" in user_input:
             # Slash found, use point-based version
-            return self._get_grade_points_input(user_input, default_val)
+            return self._get_grade_points_input(user_input)
         else:
             # Slash not found, use percentage-based version
-            return self._get_grade_pct_input(user_input, default_val)
-    
-    def _get_grade_pct_input(self, user_input: str, defualt_val: float) -> float:
-        """Parse percentage-based grade input in float form (0.0) and output the value,
-        using the default value if the input is invalid.
-        
+            return self._get_grade_pct_input(user_input)
+
+    def _get_grade_pct_input(self, user_input: str) -> float:
+        """Parse percentage-based grade input in float form (0.0) and output the value.
+
         Args:
             user_input: The user's input.
-            defualt_val: The default value to use if the input is invalid.
-            
+
         Returns:
             The user's input or the default value.
+
+        Raises:
+            ValueError: If the input is invalid.
         """
         try:
             return round(float(user_input), 2)
-        except ValueError:
-            self._print("Invalid grade input, using default value.")
-            return defualt_val
+        except ValueError as e:
+            self._print(f"Invalid grade input: {e}. Please try again.")
+            raise ValueError(f"Invalid grade input: {e}") from e
         
-    def _get_grade_points_input(self, user_input: str, default_val: float) -> float:
-        """Parse point-based grade input in the form 0.0/0.0 and output the calculation,
-        using the default value if the input is invalid.
-        
+    def _get_grade_points_input(self, user_input: str) -> float:
+        """Parse point-based grade input in the form 0.0/0.0 and output the calculation.
+
         Args:
             user_input: The user's input.
-            default_val: The default value to use if the input is invalid.
-            
+
         Returns:
-            The user's input or the default value.
+            The calculated grade as a percentage.
+
+        Raises:
+            ValueError: If the input is invalid (wrong format, negative divisor, etc.).
         """
         values = user_input.split("/")
         if len(values) != 2:
-            self._print("Invalid grade input, using default value.")
-            return default_val
+            self._print("Invalid grade input. Please try again.")
+            raise ValueError("Invalid grade points input")
         try:
             points_earned = float(values[0])
             total_points = float(values[1])
+            if total_points <= 0.0:
+                raise ValueError("Total points must be greater than 0")
             calculated_grade = (points_earned / total_points) * 100
             return round(calculated_grade, 2)
-        except (ValueError, ZeroDivisionError):
-            self._print("Invalid grade input, using default value.")
-            return default_val
+        except (ValueError, ZeroDivisionError) as e:
+            self._print(f"Invalid grade input: {e}. Please try again.")
+            raise ValueError(f"Invalid grade points input: {e}") from e
 
     def display_delim(self) -> None:
         """Prints a delimiter line to separate different sections of information."""
@@ -443,7 +450,7 @@ class CliView:
         self._print_centered("What would you like to do today?")
 
         # Check if there are courses in the list
-        if (self._selected_term._course_list):
+        if (self._selected_term.course_list):
             self._print("[A] Add course")
             self._print("[E] Edit course")
             self._print("[S] Select course")
@@ -462,7 +469,7 @@ class CliView:
         self._print_centered("What would you like to do today?")
 
         # Check if there are assignments in the list
-        if (self._selected_course._assignment_list):
+        if (self._selected_course.assignment_list):
             self._print("[A] Add assignment")
             self._print("[E] Edit assignment")
             self._print("[R] Remove assignment")
@@ -504,7 +511,7 @@ class CliView:
             
     def display_assignment_list_info(self) -> None:
         """Displays information about all assignments from the selected Course."""
-        assignments = self._selected_course._assignment_list
+        assignments = self._selected_course.assignment_list
         
         # Return early if there are no assignments
         if not assignments:
@@ -520,7 +527,7 @@ class CliView:
             
     def display_completed_assignment_info(self) -> None:
         """Displays information about completed assignments from the selected Course."""
-        assignments = self._selected_course._assignment_list
+        assignments = self._selected_course.assignment_list
         completed_assignments = False
         
         for assignment in assignments.values():
@@ -537,7 +544,7 @@ class CliView:
             
     def display_incomplete_assignment_info(self) -> None:
         """Displays information about incomplete assignments from the selected Course."""
-        assignments = self._selected_course._assignment_list
+        assignments = self._selected_course.assignment_list
         incomplete_assignments = False
         
         for assignment in assignments.values():
@@ -604,26 +611,44 @@ class CliView:
     def prompt_edit_term(self) -> None:
         """Prompt the user for information to edit a Term in the current list."""
         result_flags = EditTermResult()
-        
+
         self._print("Enter the following information for the term you want to edit:")
         title = self._get_string_input("Title", "")
-        
+
         try:
             self._selected_term = self._controller.find_term(title)
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Term not found. Operation cancelled.")
             return
         term_id = self._selected_term.id
-        
+
         # Get fields that need to be updated and normalize input
         self._print("Fields available: title, start date, end date, active")
         to_update = self._get_string_input("Fields to update (comma-separated)", "").lower()
         edit_fields = [f.strip() for f in to_update.split(",")]
-        
+
+        # Normalize field aliases to canonical names and deduplicate
+        field_aliases = {
+            "startdate": "start date",
+            "enddate": "end date",
+        }
+        normalized_fields = []
+        seen_fields = set()
+        for field in edit_fields:
+            normalized = field_aliases.get(field, field)
+            if normalized and normalized not in seen_fields:
+                normalized_fields.append(normalized)
+                seen_fields.add(normalized)
+        edit_fields = normalized_fields
+
+        # Initialize date variables to None to handle any input order
+        new_start_date = None
+        new_end_date = None
+
         for field in edit_fields:
             if field == "title":
                 result_flags.title_requested = True
-                
+
                 try:
                     new_title = self._get_string_input("New title", "")
                     utils.validate_req_string(new_title, "Title")
@@ -635,38 +660,27 @@ class CliView:
                     else:
                         self._print("A term with this title already exists. "
                             "Cannot update title.")
-            elif field == "start date" or field == "startdate":
+            elif field == "start date":
                 result_flags.start_date_requested = True
-                
+
                 try:
                     new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", \
                         self._selected_term.start_date)
-                    # Check date order if only start date is being edited
-                    if "end date" not in edit_fields:
-                        utils.validate_date_order(new_start_date, self._selected_term.end_date)
-                    # Only update if start date is different
-                    if new_start_date != self._selected_term.start_date:
-                        self._controller.edit_start_date(term_id, new_start_date)
-                        result_flags.start_date_updated = True
                 except ValueError:
                     self._print("Invalid date value. Cannot update start date.")
-            elif field == "end date" or field == "enddate":
+                    new_start_date = None
+            elif field == "end date":
                 result_flags.end_date_requested = True
-                
+
                 try:
                     new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", \
                         self._selected_term.end_date)
-                    # Check date order
-                    utils.validate_date_order(self._selected_term.start_date, new_end_date)
-                    # Only update if end date is different
-                    if new_end_date != self._selected_term.end_date:
-                        self._controller.edit_end_date(term_id, new_end_date)
-                        result_flags.end_date_updated = True
                 except ValueError:
                     self._print("Invalid date value. Cannot update end date.")
+                    new_end_date = None
             elif field == "active":
                 result_flags.active_requested = True
-                
+
                 try:
                     new_active = self._get_bool_input("Is this a current term? (yes/no)", True)
                     # Only update if active flag is different
@@ -677,6 +691,39 @@ class CliView:
                     self._print("Invalid boolean value. Cannot update active flag.")
             else:
                 self._print(f"Unknown field: {field}. Skipping.")
+
+        # Validate and apply date changes after collecting all inputs
+        if result_flags.start_date_requested and result_flags.end_date_requested:
+            # Both dates are being edited - validate together
+            if new_start_date is not None and new_end_date is not None:
+                try:
+                    utils.validate_date_order(new_start_date, new_end_date)
+                    if (new_start_date != self._selected_term.start_date or 
+                        new_end_date != self._selected_term.end_date):
+                        self._controller.edit_start_and_end_date(
+                            term_id, new_start_date, new_end_date)
+                        result_flags.start_date_updated = True
+                        result_flags.end_date_updated = True
+                except ValueError:
+                    self._print("Invalid date order. Cannot update dates.")
+        elif result_flags.start_date_requested:
+            # Only start date is being edited
+            if new_start_date is not None and new_start_date != self._selected_term.start_date:
+                try:
+                    utils.validate_date_order(new_start_date, self._selected_term.end_date)
+                    self._controller.edit_start_date(term_id, new_start_date)
+                    result_flags.start_date_updated = True
+                except ValueError:
+                    self._print("Invalid date order. Cannot update start date.")
+        elif result_flags.end_date_requested:
+            # Only end date is being edited
+            if new_end_date is not None and new_end_date != self._selected_term.end_date:
+                try:
+                    utils.validate_date_order(self._selected_term.start_date, new_end_date)
+                    self._controller.edit_end_date(term_id, new_end_date)
+                    result_flags.end_date_updated = True
+                except ValueError:
+                    self._print("Invalid date order. Cannot update end date.")
         
         # Update result output
         if result_flags.any_requested():
@@ -715,7 +762,7 @@ class CliView:
         try:
             self._selected_term = self._controller.find_term(title)
             self._print(f"Term '{title}' was selected.")
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Term not found. No selection made.")
             self._selected_term = None
 
@@ -740,7 +787,7 @@ class CliView:
             try:
                 self._controller.remove_term(title)
                 self._print(f"Term '{title}' was removed.")
-            except ValueError:
+            except (ValueError, KeyError):
                 self._print("Term not found. No term was removed.")
         else:
             self._print(f"Operation cancelled. Term '{title}' was not removed.")
@@ -787,7 +834,7 @@ class CliView:
             num_credits = self._get_int_input("Number of Credits", 0)
             
             if num_credits < 0:
-                self._print("Invalid number of credits. Number of credits must be greater"
+                self._print("Invalid number of credits. Number of credits must be greater "
                     "than or equal to 0. Please try again.")
             else:
                 invalid_num_credits = False
@@ -800,7 +847,7 @@ class CliView:
                 self._print("Invalid input. Please try again.")
 
         try:
-            course_controller = self._controller.get_course_controller()
+            course_controller = self._controller.course_controller
             course_controller.add_course(title, description, start_date, end_date,
                 num_credits, active)
             self._print(f"Course '{title}' successfully added.")
@@ -810,14 +857,14 @@ class CliView:
     def prompt_edit_course(self) -> None:
         """Prompt the user for information to edit a Course in the current list."""
         result_flags = EditCourseResult()
-        course_controller = self._controller.get_course_controller()
+        course_controller = self._controller.course_controller
 
         self._print("Enter the following information for the course you want to edit:")
         title = self._get_string_input("Title", "")
-        
+
         try:
             self._selected_course = course_controller.find_course(title)
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Course not found. Operation cancelled.")
             return
         course_id = self._selected_course.id
@@ -828,10 +875,30 @@ class CliView:
         to_update = self._get_string_input("Fields to update (comma-separated)", "").lower()
         edit_fields = [f.strip() for f in to_update.split(",")]
 
+        # Normalize field aliases to canonical names and deduplicate
+        field_aliases = {
+            "startdate": "start date",
+            "enddate": "end date",
+            "numberofcredits": "number of credits",
+            "numcredits": "number of credits",
+        }
+        normalized_fields = []
+        seen_fields = set()
+        for field in edit_fields:
+            normalized = field_aliases.get(field, field)
+            if normalized and normalized not in seen_fields:
+                normalized_fields.append(normalized)
+                seen_fields.add(normalized)
+        edit_fields = normalized_fields
+
+        # Initialize date variables to None to handle any input order
+        new_start_date = None
+        new_end_date = None
+
         for field in edit_fields:
             if field == "title":
                 result_flags.title_requested = True
-                
+
                 try:
                     new_title = self._get_string_input("New title", "")
                     utils.validate_req_string(new_title, "Title")
@@ -845,7 +912,7 @@ class CliView:
                             "Cannot update title.")
             elif field == "description":
                 result_flags.description_requested = True
-                
+
                 try:
                     old_description = self._selected_course.description
                     new_description = self._get_string_input("New description", "")
@@ -858,40 +925,27 @@ class CliView:
                     if not new_description or new_description.isspace():
                         self._print("Empty description not allowed. "
                             "Cannot update description.")
-            elif field == "start date" or field == "startdate":
+            elif field == "start date":
                 result_flags.start_date_requested = True
-                
+
                 try:
                     new_start_date = self._get_date_input("New start date (MM-DD-YYYY)", \
                         self._selected_course.start_date)
-                    # Check date order if only start date is being edited
-                    if "end date" not in edit_fields:
-                        utils.validate_date_order(new_start_date, 
-                            self._selected_course.end_date)
-                    # Only update if start date is different
-                    if new_start_date != self._selected_course.start_date:
-                        course_controller.edit_start_date(course_id, new_start_date)
-                        result_flags.start_date_updated = True
                 except ValueError:
                     self._print("Invalid date value. Cannot update start date.")
-            elif field == "end date" or field == "enddate":
+                    new_start_date = None
+            elif field == "end date":
                 result_flags.end_date_requested = True
-                
+
                 try:
                     new_end_date = self._get_date_input("New end date (MM-DD-YYYY)", \
                         self._selected_course.end_date)
-                    # Check date order
-                    utils.validate_date_order(self._selected_course.start_date, new_end_date)
-                    # Only update if end date is different
-                    if new_end_date != self._selected_course.end_date:
-                        course_controller.edit_end_date(course_id, new_end_date)
-                        result_flags.end_date_updated = True
                 except ValueError:
                     self._print("Invalid date value. Cannot update end date.")
-            elif field == "number of credits" or field == "numberofcredits" \
-                    or field == "numcredits":
-                result_flags.num_credits_requested = True
-                
+                    new_end_date = None
+            elif field == "number of credits":
+                result_flags.number_of_credits_requested = True
+
                 try:
                     new_num_credits = self._get_int_input("New number of credits", 3)
                     if new_num_credits < 0:
@@ -901,13 +955,13 @@ class CliView:
                         # Only update if number of credits is different
                         if new_num_credits != self._selected_course.num_credits:
                             course_controller.edit_num_credits(course_id, new_num_credits)
-                            result_flags.num_credits_updated = True
+                            result_flags.number_of_credits_updated = True
                 except ValueError:
                     self._print("Number of credits must be a valid integer. Cannot update "
                         "number of credits.")
             elif field == "active":
                 result_flags.active_requested = True
-                
+
                 try:
                     new_active = self._get_bool_input("Is this a current course? (yes/no)",
                         True)
@@ -919,6 +973,39 @@ class CliView:
                     self._print("Invalid boolean value. Cannot update active flag.")
             else:
                 self._print(f"Unknown field '{field}'. Skipping.")
+
+        # Validate and apply date changes after collecting all inputs
+        if result_flags.start_date_requested and result_flags.end_date_requested:
+            # Both dates are being edited - validate together
+            if new_start_date is not None and new_end_date is not None:
+                try:
+                    utils.validate_date_order(new_start_date, new_end_date)
+                    if (new_start_date != self._selected_course.start_date or 
+                        new_end_date != self._selected_course.end_date):
+                        course_controller.edit_start_and_end_date(
+                            course_id, new_start_date, new_end_date)
+                        result_flags.start_date_updated = True
+                        result_flags.end_date_updated = True
+                except ValueError:
+                    self._print("Invalid date order. Cannot update dates.")
+        elif result_flags.start_date_requested:
+            # Only start date is being edited
+            if new_start_date is not None and new_start_date != self._selected_course.start_date:
+                try:
+                    utils.validate_date_order(new_start_date, self._selected_course.end_date)
+                    course_controller.edit_start_date(course_id, new_start_date)
+                    result_flags.start_date_updated = True
+                except ValueError:
+                    self._print("Invalid date order. Cannot update start date.")
+        elif result_flags.end_date_requested:
+            # Only end date is being edited
+            if new_end_date is not None and new_end_date != self._selected_course.end_date:
+                try:
+                    utils.validate_date_order(self._selected_course.start_date, new_end_date)
+                    course_controller.edit_end_date(course_id, new_end_date)
+                    result_flags.end_date_updated = True
+                except ValueError:
+                    self._print("Invalid date order. Cannot update end date.")
 
         # Update result output
         if result_flags.any_requested():
@@ -943,8 +1030,8 @@ class CliView:
                 else:
                     self._print("Duration: (unchanged)")
 
-            if result_flags.num_credits_requested:
-                if result_flags.num_credits_updated:
+            if result_flags.number_of_credits_requested:
+                if result_flags.number_of_credits_updated:
                     self._print(f"Number of credits: {self._selected_course.num_credits}")
                 else:
                     self._print("Number of credits: (unchanged)")
@@ -960,7 +1047,7 @@ class CliView:
 
     def prompt_select_course(self) -> None:
         """Prompt the user to select a Course from the list."""
-        course_controller = self._controller.get_course_controller()
+        course_controller = self._controller.course_controller
         
         self._print("Here is a list of all courses:")
         self.display_course_list_info()
@@ -971,14 +1058,14 @@ class CliView:
         try:
             self._selected_course = course_controller.find_course(title)
             self._print(f"Course '{title}' was selected.")
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Course not found. No selection made.")
             self._selected_course = None
 
     def prompt_remove_course(self) -> None:
         """Prompt the user to remove a Course from the list."""
         invalid_bool = True
-        course_controller = self._controller.get_course_controller()
+        course_controller = self._controller.course_controller
         
         self._print("Enter the following information for the course you want to remove:")
         title = self._get_string_input("Title", "")
@@ -997,7 +1084,7 @@ class CliView:
             try:
                 course_controller.remove_course(title)
                 self._print(f"Course '{title}' was removed.")
-            except ValueError:
+            except (ValueError, KeyError):
                 self._print("Course not found. No Course was removed.")
         else:
             self._print(f"Operation cancelled. Course '{title}' was not removed.")
@@ -1061,9 +1148,12 @@ class CliView:
         # Only set grade if completed is True; otherwise, use default
         if completed:
             while invalid_grade:
-                grade = self._get_grade_input("Grade", 0.0)
+                try:
+                    grade = self._get_grade_input("Grade", 0.0)
+                except ValueError:
+                    continue
 
-                if grade > 150.0 or grade < 0.0:
+                if not 0.0 <= grade <= 150.0:
                     self._print("Invalid grade. Grade must be from 0 to 150. Please try again.")
                 else:
                     invalid_grade = False
@@ -1074,14 +1164,14 @@ class CliView:
             assignment_controller = (
                 self
                 ._controller
-                .get_course_controller()
-                .get_assignment_controller()
+                .course_controller
+                .assignment_controller
             )
             assignment_controller.add_assignment(title, description, category, due_date,
                 completed, grade)
             self._print(f"Assignment '{title}' successfully added.")
-        except Exception:
-            self._print("An Assignment with this title already exists. Please choose a new title.")
+        except ValueError:
+            self._print("An assignment with this title already exists. Please choose a new title.")
 
     def prompt_edit_assignment(self) -> None:
         """Prompt the user for information to edit an Assignment in the current list."""
@@ -1089,25 +1179,38 @@ class CliView:
         assignment_controller = (
             self
             ._controller
-            .get_course_controller()
-            .get_assignment_controller()
+            .course_controller
+            .assignment_controller
         )
 
-        self._print("Enter the following information for the Assignment you want to edit:")
+        self._print("Enter the following information for the assignment you want to edit:")
         title = self._get_string_input("Title", "")
 
         try:
-            self._selected_assignment = assignment_controller.get_assignment_by_title(title)
-        except Exception:
+            self._selected_assignment = assignment_controller.find_assignment(title)
+        except KeyError:
             self._print("Assignment not found. Operation cancelled.")
             return
-        assignment_id = self._selected_assignment.assignment_id
+        assignment_id = self._selected_assignment.id
 
         # Get fields that need to be updated and normalize input
         self._print("Fields available: title, description, category, due date")
         to_update = self._get_string_input("Fields to update (comma-separated)", "").lower()
         edit_fields = [field.strip() for field in to_update.split(",")]
-        
+
+        # Normalize field aliases to canonical names and deduplicate
+        field_aliases = {
+            "duedate": "due date",
+        }
+        normalized_fields = []
+        seen_fields = set()
+        for field in edit_fields:
+            normalized = field_aliases.get(field, field)
+            if normalized and normalized not in seen_fields:
+                normalized_fields.append(normalized)
+                seen_fields.add(normalized)
+        edit_fields = normalized_fields
+
         # Get updated info and perform update
         for field in edit_fields:
             if field == "title":
@@ -1122,7 +1225,7 @@ class CliView:
                     if not new_title or new_title.isspace():
                         self._print("Empty title not allowed. Cannot update title.")
                     else:
-                        self._print("A course with this title already exists. "
+                        self._print("An assignment with this title already exists. "
                             "Cannot update title.")
             elif field == "description":
                 result_flags.description_requested = True
@@ -1147,13 +1250,13 @@ class CliView:
                 except ValueError:
                     self._print("Invalid category. Category must be in grade weights. "
                         "Cannot update category.")
-            elif field == "due date" or field == "duedate":
+            elif field == "due date":
                 result_flags.due_date_requested = True
 
                 try:
                     new_due_date = self._get_date_input("New due date (MM-DD-YYYY)", \
                         self._selected_assignment.due_date)
-                    
+
                     # Only update if due date is different
                     if new_due_date != self._selected_assignment.due_date:
                         assignment_controller.edit_due_date(assignment_id, new_due_date)
@@ -1198,8 +1301,8 @@ class CliView:
         invalid_bool = True
         assignment_controller = (
             self
-            ._controller.get_course_controller()
-            .get_assignment_controller()
+            ._controller.course_controller
+            .assignment_controller
         )
 
         self._print("Enter the following information for the assignment you want to remove:")
@@ -1219,7 +1322,7 @@ class CliView:
             try:
                 assignment_controller.remove_assignment(title)
                 self._print(f"Assignment '{title}' was removed.")
-            except ValueError:
+            except (ValueError, KeyError):
                 self._print("Assignment not found. Operation cancelled.")
         else:
             self._print(f"Operation cancelled. Assignment '{title}' was not removed.")
@@ -1229,24 +1332,29 @@ class CliView:
         assignment_controller = (
             self
             ._controller
-            .get_course_controller()
-            .get_assignment_controller()
+            .course_controller
+            .assignment_controller
         )
 
         self._print("Enter the following information for the assignment grade you want to add:")
         title = self._get_string_input("Title", "")
         try:
             assignment_controller.find_assignment(title)
-        except ValueError:
+        except (ValueError, KeyError):
             self._print("Assignment not found. Operation cancelled.")
             return
         
         try:
-            grade = self._get_float_input("Grade", -1.0)
-            assignment_controller.add_grade(title, grade)
+            grade = self._get_grade_input("Grade", -1.0)
+            # Validate grade range
+            if grade < 0.0 or grade > 150.0:
+                self._print("Invalid grade. Grade must be in range 0 to 150. Operation cancelled.")
+                return
+            assignment_controller.add_grade(title, grade=grade)
             self._print(f"Grade {grade} added to assignment '{title}'.")
         except ValueError:
-            self._print("Invalid grade. Grade must be in range 0 to 150. Operation cancelled.")
+            # _get_grade_input already printed an error message
+            self._print("Operation cancelled.")
             return
 
     def prompt_remove_assignment_grade(self) -> None:
@@ -1255,8 +1363,8 @@ class CliView:
         assignment_controller = (
             self
             ._controller
-            .get_course_controller()
-            .get_assignment_controller()
+            .course_controller
+            .assignment_controller
         )
 
         self._print("Enter the following information for the assignment grade you want to remove:")
@@ -1276,7 +1384,7 @@ class CliView:
             try:
                 assignment_controller.remove_grade(title)
                 self._print(f"Grade removed from assignment '{title}'.")
-            except ValueError:
+            except (ValueError, KeyError):
                 self._print("Assignment not found. Operation cancelled.")
         else:
             self._print(f"Operation cancelled. The grade of assignment '{title}' was not removed.")
@@ -1365,7 +1473,7 @@ class CliView:
                                 (
                                     self
                                     ._controller
-                                    .get_course_controller()
+                                    .course_controller
                                     .select_course(self._selected_course.title)
                                 )
                                 state = MenuState.ASSIGNMENT
