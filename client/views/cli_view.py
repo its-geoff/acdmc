@@ -627,6 +627,20 @@ class CliView:
         to_update = self._get_string_input("Fields to update (comma-separated)", "").lower()
         edit_fields = [f.strip() for f in to_update.split(",")]
 
+        # Normalize field aliases to canonical names and deduplicate
+        field_aliases = {
+            "startdate": "start date",
+            "enddate": "end date",
+        }
+        normalized_fields = []
+        seen_fields = set()
+        for field in edit_fields:
+            normalized = field_aliases.get(field, field)
+            if normalized and normalized not in seen_fields:
+                normalized_fields.append(normalized)
+                seen_fields.add(normalized)
+        edit_fields = normalized_fields
+
         # Initialize date variables to None to handle any input order
         new_start_date = None
         new_end_date = None
@@ -646,7 +660,7 @@ class CliView:
                     else:
                         self._print("A term with this title already exists. "
                             "Cannot update title.")
-            elif field == "start date" or field == "startdate":
+            elif field == "start date":
                 result_flags.start_date_requested = True
 
                 try:
@@ -655,7 +669,7 @@ class CliView:
                 except ValueError:
                     self._print("Invalid date value. Cannot update start date.")
                     new_start_date = None
-            elif field == "end date" or field == "enddate":
+            elif field == "end date":
                 result_flags.end_date_requested = True
 
                 try:
@@ -861,6 +875,22 @@ class CliView:
         to_update = self._get_string_input("Fields to update (comma-separated)", "").lower()
         edit_fields = [f.strip() for f in to_update.split(",")]
 
+        # Normalize field aliases to canonical names and deduplicate
+        field_aliases = {
+            "startdate": "start date",
+            "enddate": "end date",
+            "numberofcredits": "number of credits",
+            "numcredits": "number of credits",
+        }
+        normalized_fields = []
+        seen_fields = set()
+        for field in edit_fields:
+            normalized = field_aliases.get(field, field)
+            if normalized and normalized not in seen_fields:
+                normalized_fields.append(normalized)
+                seen_fields.add(normalized)
+        edit_fields = normalized_fields
+
         # Initialize date variables to None to handle any input order
         new_start_date = None
         new_end_date = None
@@ -895,7 +925,7 @@ class CliView:
                     if not new_description or new_description.isspace():
                         self._print("Empty description not allowed. "
                             "Cannot update description.")
-            elif field == "start date" or field == "startdate":
+            elif field == "start date":
                 result_flags.start_date_requested = True
 
                 try:
@@ -904,7 +934,7 @@ class CliView:
                 except ValueError:
                     self._print("Invalid date value. Cannot update start date.")
                     new_start_date = None
-            elif field == "end date" or field == "enddate":
+            elif field == "end date":
                 result_flags.end_date_requested = True
 
                 try:
@@ -913,8 +943,7 @@ class CliView:
                 except ValueError:
                     self._print("Invalid date value. Cannot update end date.")
                     new_end_date = None
-            elif field == "number of credits" or field == "numberofcredits" \
-                    or field == "numcredits":
+            elif field == "number of credits":
                 result_flags.number_of_credits_requested = True
 
                 try:
@@ -1168,7 +1197,20 @@ class CliView:
         self._print("Fields available: title, description, category, due date")
         to_update = self._get_string_input("Fields to update (comma-separated)", "").lower()
         edit_fields = [field.strip() for field in to_update.split(",")]
-        
+
+        # Normalize field aliases to canonical names and deduplicate
+        field_aliases = {
+            "duedate": "due date",
+        }
+        normalized_fields = []
+        seen_fields = set()
+        for field in edit_fields:
+            normalized = field_aliases.get(field, field)
+            if normalized and normalized not in seen_fields:
+                normalized_fields.append(normalized)
+                seen_fields.add(normalized)
+        edit_fields = normalized_fields
+
         # Get updated info and perform update
         for field in edit_fields:
             if field == "title":
@@ -1208,13 +1250,13 @@ class CliView:
                 except ValueError:
                     self._print("Invalid category. Category must be in grade weights. "
                         "Cannot update category.")
-            elif field == "due date" or field == "duedate":
+            elif field == "due date":
                 result_flags.due_date_requested = True
 
                 try:
                     new_due_date = self._get_date_input("New due date (MM-DD-YYYY)", \
                         self._selected_assignment.due_date)
-                    
+
                     # Only update if due date is different
                     if new_due_date != self._selected_assignment.due_date:
                         assignment_controller.edit_due_date(assignment_id, new_due_date)
