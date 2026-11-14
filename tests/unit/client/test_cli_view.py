@@ -1091,7 +1091,7 @@ class TestCliView:
             "Spring 2025\n"
             "invalid\n"
             "05-23-2025\n"
-            "12-15-2026\n"
+            "12-15-2099\n"
             "yes\n"
             "X\n"
         )
@@ -1673,6 +1673,10 @@ class TestCliView:
         term_list = controller.term_list
         assert len(term_list) == 1
 
+        selected_term = controller.find_term("Spring 2025")
+        assert selected_term.start_date == datetime(2025, 6, 10)
+        assert selected_term.end_date == datetime(2025, 8, 12)
+
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
         assert "Update results" in user_out
@@ -2050,7 +2054,7 @@ class TestCliView:
             "\n"
             "invalid\n"
             "05-12-2025\n"
-            "12-15-2026\n"
+            "12-15-2099\n"
             "3\n"
             "yes\n"
             "X\n"
@@ -2903,6 +2907,10 @@ class TestCliView:
 
         course_list = course_controller.get_course_list()
         assert len(course_list) == 1
+
+        selected_course = course_controller.find_course("ENGR 195A")
+        assert selected_course.start_date == datetime(2025, 6, 11)
+        assert selected_course.end_date == datetime(2025, 9, 8)
 
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
@@ -3928,7 +3936,7 @@ class TestCliView:
             "Homework\n"
             "01-30-2025\n"
             "yes\n"
-            "100.0\n"
+            "150.0\n"
             "X\n"
             "X\n"
             "X\n"
@@ -3938,6 +3946,14 @@ class TestCliView:
 
         view = CliView(controller, input_stream, output_stream)
         view.run()
+
+        assignment_controller = controller.course_controller.assignment_controller
+        assignment_list = assignment_controller.get_assignment_list()
+        assert len(assignment_list) == 1
+
+        selected_assignment = assignment_controller.find_assignment("Homework 1")
+        assert selected_assignment.completed is True
+        assert math.isclose(selected_assignment.grade, 150.0, abs_tol=1e-9)
 
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
@@ -4102,7 +4118,7 @@ class TestCliView:
             "Homework\n"
             "01-30-2025\n"
             "yes\n"
-            "20/20\n"
+            "30/20\n"
             "X\n"
             "X\n"
             "X\n"
@@ -4112,6 +4128,14 @@ class TestCliView:
 
         view = CliView(controller, input_stream, output_stream)
         view.run()
+
+        assignment_controller = controller.course_controller.assignment_controller
+        assignment_list = assignment_controller.get_assignment_list()
+        assert len(assignment_list) == 1
+
+        selected_assignment = assignment_controller.find_assignment("Homework 1")
+        assert selected_assignment.completed is True
+        assert math.isclose(selected_assignment.grade, 150.0, abs_tol=1e-9)
 
         user_out = output_stream.getvalue()
         assert "Welcome to ACDMC!" in user_out
