@@ -1,0 +1,20 @@
+# Virtual environment
+.venv/
+
+# uv and ruff cache
+.uv_cache/
+.ruff_cache/
+
+# Coverage file
+.coverage
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build and distribution artifacts
+build/
+dist/
+*.egg-info/
